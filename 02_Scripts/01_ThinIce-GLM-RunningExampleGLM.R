@@ -40,8 +40,9 @@ nml_file<-paste0("FCR","/glm3.nml")
 nml<-read_nml(nml_file)
 print(nml)
 
-remotes::install_github("FLARE-forecast/GLM3r")
-libary(GLM3r) #weird, had to click the box in packages
+#load GLM3r
+if(!require('GLM3r')){remotes::install_github("FLARE-forecast/GLM3r")}
+library(GLM3r) #load the library
 #Check the version - this is 3.3.0a9 as of 30Mar2025
 GLM3r::glm_version()
 
@@ -65,5 +66,10 @@ sim_vars(nc_file)
 plot_var(nc_file,"vol_blue_ice")
 
 #From FCR-GLMv3.3
-system2("C:/Users/richardd/Documents/ThinIce-GLM/04_glm_3.3.1a0/glm", stdout = TRUE, stderr = TRUE, env = "DYLD_LIBRARY_PATH=C:/Users/richardd/Documents/ThinIce-GLM/04_glm_3.3.1a0")
+getwd() #check this 
 
+system2("04_glm_3.3.1a0/glm.exe", stdout = TRUE, stderr = TRUE, env = "DYLD_LIBRARY_PATH=/04_glm_3.3.1a0/")
+#system2(paste0(sim_folder, "/", "glm"), stdout = TRUE, stderr = TRUE, env = paste0("DYLD_LIBRARY_PATH=",sim_folder))
+system2('05_Sparkling/glm.bat')
+
+system('run_glm3.bat',ignore.stdout=TRUE)
