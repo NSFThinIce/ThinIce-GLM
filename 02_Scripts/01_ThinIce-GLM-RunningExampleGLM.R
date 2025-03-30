@@ -72,4 +72,4 @@ system2("04_glm_3.3.1a0/glm.exe", stdout = TRUE, stderr = TRUE, env = "DYLD_LIBR
 #system2(paste0(sim_folder, "/", "glm"), stdout = TRUE, stderr = TRUE, env = paste0("DYLD_LIBRARY_PATH=",sim_folder))
 system2('05_Sparkling/glm.bat')
 
-system('run_glm3.bat',ignore.stdout=TRUE)
+system('\\04_glm_3.3.1a0\\glm.exe',ignore.stdout=TRUE)
