@@ -91,4 +91,9 @@ sim_vars(nc_file)
 #Plot a variable, e.g., height of ice
 plot_var(nc_file, "vol_blue_ice")
 
+#Next steps#####
+#Clean this file up - libraries to the top, functions to 00_ThinIce-GLM-Functions.R file####
+#Run using Mohonk met data and morphology####
+#calibrate physics using real data####
+#
 
