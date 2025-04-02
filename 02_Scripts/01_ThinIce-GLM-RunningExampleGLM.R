@@ -91,12 +91,4 @@ sim_vars(nc_file)
 #Plot a variable, e.g., height of ice
 plot_var(nc_file, "vol_blue_ice")
 
-#From FCR-GLMv3.3
-# Would recommend to use the function above rather than the code below
-getwd() #check this 
 
-system2("04_glm_3.3.1a0/glm.exe", stdout = TRUE, stderr = TRUE, env = "DYLD_LIBRARY_PATH=/04_glm_3.3.1a0/")
-#system2(paste0(sim_folder, "/", "glm"), stdout = TRUE, stderr = TRUE, env = paste0("DYLD_LIBRARY_PATH=",sim_folder))
-system2('05_Sparkling/glm.bat')
-
-system('\\04_glm_3.3.1a0\\glm.exe',ignore.stdout=TRUE)
