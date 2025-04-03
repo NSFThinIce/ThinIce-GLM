@@ -41,7 +41,7 @@
 	   546549.916285714, 592095.742642857, 637641.569, 687641.569
 /
 &time
-   timefmt = 3 !Choose 2 (start/stop) or 3 (num_days)
+   timefmt = 3 !DCR: Choose 2 (start/stop) or 3 (num_days)
    start = '1980-04-15'
    stop = '2012-12-10'
    dt = 3600 !DCR: this is the time step in seconds, the output is generated at nsave (from &output block)*dt. So 3600 seconds = 1 hour, daily time steps are output; dt=150 seconds will get hourly output 
@@ -51,7 +51,7 @@
 &output
    out_dir = 'output'
    out_fn = 'output'
-   nsave = 24
+   nsave = 24 !DCR: This is how often to output the results but the simulation can still happen at finer time scales 
    csv_lake_fname = 'lake'
    csv_point_nlevs = 0
    csv_point_fname = 'WQ_'

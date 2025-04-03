@@ -81,7 +81,8 @@ sim_vars(nc_file)
 plot_var(nc_file, "vol_blue_ice")
 
 #Next steps#####
-#Clean this file up - libraries to the top, functions to 00_ThinIce-GLM-Functions.R file####
+#DONE: Clean this file up - libraries to the top, functions to 00_ThinIce-GLM-Functions.R file####
+#Read through each of the items in the nml file to see what they do####
 #Run using Mohonk met data and morphology####
 #calibrate physics using real data####
 #
