@@ -1,12 +1,14 @@
+## Thin Ice GLM modeling
+
 This githhub repository is the best place to find Thin Ice details about running GLM on our modeled lakes.
-Those lakes include:
-Mohonk (contact: Dave Richardson)
-Green Lake 4 (Contact: Bella Oleksy)
-The Loch (Contact: Bella Oleksy)
-Bethel (Contact: Rebecca North)
-Marceline (COntact: Rebecca North)
-Shelburne (Contact: Mindy Morales-Williams)
-ELA239 (Contact: Scott Higgins)
+Those lakes include: <br>
+Mohonk (contact: Dave Richardson) <br>
+Green Lake 4 (Contact: Bella Oleksy) <br>
+The Loch (Contact: Bella Oleksy) <br>
+Bethel (Contact: Rebecca North) <br>
+Marceline (COntact: Rebecca North) <br>
+Shelburne (Contact: Mindy Morales-Williams) <br>
+ELA239 (Contact: Scott Higgins) <br>
 
 ## Fun links that might be informative or helpful:
 Best place to find the description of the GLM nml configuration file and everything that it does:
@@ -21,4 +23,6 @@ https://github.com/robertladwig/GLM_workshop
 The most recent releases available are here: 
 GLM3.3.1: https://github.com/AquaticEcoDynamics/releases/tree/main/GLM-AED
 
+## Contacts
 
+Dave Richardson (richardsond@newpaltz.edu)
