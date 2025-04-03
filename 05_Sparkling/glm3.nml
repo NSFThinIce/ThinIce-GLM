@@ -41,12 +41,12 @@
 	   546549.916285714, 592095.742642857, 637641.569, 687641.569
 /
 &time
-   timefmt = 3
+   timefmt = 3 !Choose 2 (start/stop) or 3 (num_days)
    start = '1980-04-15'
    stop = '2012-12-10'
-   dt = 3600
-   timezone = -6
-   num_days=730
+   dt = 3600 !DCR: this is the time step in seconds, the output is generated at nsave (from &output block)*dt. So 3600 seconds = 1 hour, daily time steps are output; dt=150 seconds will get hourly output 
+   timezone = -6 !This is the time zone relative to GMT, eastern = -5, central = -6, mountain = -7, pacific = -8
+   num_days=730  !DCR: this is the number of days for the simulation, units = days 
 /
 &output
    out_dir = 'output'
