@@ -21,7 +21,10 @@ https://github.com/robertladwig/GLM_workshop
 <br>
 
 The most recent releases available are here: 
-GLM3.3.1: https://github.com/AquaticEcoDynamics/releases/tree/main/GLM-AED
+GLM3.3.1: https://github.com/AquaticEcoDynamics/releases/tree/main/GLM-AED<br>
+
+An ensemble model from Tadhg Moore and Chris McBride in NZ:
+https://limnotrack.github.io/AEME/articles/aeme-inputs.html
 
 ## Contacts
 
