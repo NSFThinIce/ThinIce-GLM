@@ -23,3 +23,14 @@ run_sim <- function(lake, do_run, glm_exec){
     # arguments are so the the output prints to console
   }
 } #end of run_sim function
+
+
+# Air saturation as a function of temperature and pressure
+# Used to calculate relative humidity 
+qsat = function(Ta, Pa){
+  ew = 6.1121*(1.0007+3.46e-6*Pa)*exp((17.502*Ta)/(240.97+Ta)) # in mb
+  q  = 0.62197*(ew/(Pa-0.378*ew))                              # mb -> kg/kg
+  return(q)
+}
+
+
