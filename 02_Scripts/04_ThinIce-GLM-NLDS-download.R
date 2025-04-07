@@ -6,6 +6,7 @@
 ### Modified for Thin Ice project
 ### Author: Dave Richardon richardsond@newpaltz.edu
 ### Date: 2025-04-05
+### Alternate code here: https://github.com/lawinslow/nldastools/blob/master/demo/grab_all_monthly_nldas.R
 ######################################################z #####
 rm(list=ls())
 
@@ -28,6 +29,7 @@ library(httr)
 ### Enter password information
 ###########################################################
 #https://urs.earthdata.nasa.gov/profile <-- GET A EARTHDATA LOGIN
+#Associated with drichar4@gmail.com email####
 username = "thiniceproject"
 password = "Cyanotoxin1234!!"
 
@@ -38,6 +40,7 @@ password = "Cyanotoxin1234!!"
 # Mendota Example
 #lakeShape = readOGR('forNLDAS.shp',layer='forNLDAS')
 #extent = as.numeric(lakeShape@bbox)
+#Just set extent using lat/long bounding box.####
 extent = c(-74.05990,41.75868,-74.05723,41.76179)
 
 ###########################################################
@@ -84,12 +87,11 @@ for (i in 1:length(out)) {
   
   filename = format(out[i], "%Y%m%d%H%M")
   
-  URL3 = paste('https://',username,':',password,'@hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?',
+  URL3 = paste('http://',username,':',password,'@hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?',
                'FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORA0125_H.002%2F',yearOut,'%2F',doyOut,'%2FNLDAS_FORA0125_H.A',yearOut,monthOut,dayOut,'.',hourOut,'.002.grb&',
                'FORMAT=bmV0Q0RGLw&BBOX=',extent[2],'%2C',extent[1],'%2C',extent[4],'%2C',extent[3],'&',
                'LABEL=NLDAS_FORA0125_H.A',yearOut,monthOut,dayOut,'.',hourOut,'.002.2017013163409.pss.nc&',
                'SHORTNAME=NLDAS_FORA0125_H&SERVICE=SUBSET_GRIB&VERSION=1.02&DATASET_VERSION=002',sep='')
-  
   
   # IMPORTANT MESSAGE Dec 05, 2016    The GES DISC will be migrating from http to https throughout December
   # As part of our ongoing migration to HTTPS, the GES DISC will begin redirecting all HTTP traffic to HTTPS.
@@ -99,7 +101,7 @@ for (i in 1:length(out)) {
   # point to the HTTPS addresses to avoid the enforced redirect.
   
   library(httr)
-  x = download.file(URL3,destfile = paste(filename,'.nc',sep=''),mode = 'wb',quiet = T)
+  x = download.file(URL3_test,destfile = paste(filename,'.nc',sep=''),mode = 'wb',quiet = T)
   
   for (v in 1:11) {
     br = brick(paste(filename,'.nc',sep=''),varname = vars[v])
