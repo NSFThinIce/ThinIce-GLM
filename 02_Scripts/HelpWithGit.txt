@@ -1,0 +1,36 @@
+If Git freezes/hangs up in R Studio, you cna force quit RStudio but Git might be locked and you have to unlock it.
+
+Go to the folder for the project, right click on the folder and click 'Git Bash here'
+
+https://stackoverflow.com/questions/9282632/git-index-lock-file-exists-when-i-try-to-commit-but-i-cannot-delete-the-file
+This command line deletes that lock and frees up the program:
+	rm -f .git/index.lock
+	
+	
+https://www.atlassian.com/git/tutorials/saving-changes/git-commit
+In Git Bash, here are some commands:
+Commit all with a message and then push
+
+	git commit -am "commit message" 
+
+	git push
+
+
+https://stackoverflow.com/questions/43690977/commit-a-large-number-of-files-in-rstudio-using-git-panel
+Of course you can ignore the GUI and stick to the command-line Git forever, but if you don't want, a quick jump to the command-line git would solve this problem for now.
+
+The temporary solution that I found is as follows:
+
+Click on the blue-gear icon on the GIT panel, inside RStudio.
+Select Shell (a terminal window will pup up!)
+Write the add and commit command in the terminal:
+{ATTENTION: The following command will commit changes on ALL files! You may want to use what is appropriate for your situation!}
+
+    git add -A && git commit -m 'staging all files'
+
+Now you can go back to the GUI Git, and click on push button. All files that you staged in the terminal window, will be pushed up to your repository.
+
+FINAL suggestion: when adding a ton of new files, R Studio tends to hang up
+	First, Git>More>New Terminal
+	git add -A
+	Then go through commit in GUI like usual, even if it the files are selected there

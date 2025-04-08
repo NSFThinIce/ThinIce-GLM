@@ -76,22 +76,67 @@ for (i in 1:length(out.ts)) {
   
   filename = format(out.ts[i], "%Y%m%d%H%M")
   
+  #Get URL for FORA which has 12 output variables including long wave radiation####
+  #Trying to match up with the URL from FORA gotten from subsetting data here and downloading links list####
+  #https://disc.gsfc.nasa.gov/datasets/NLDAS_FORA0125_H_2.0/summary?keywords=NLDAS
+  #                  https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORA0125_H.2.0%2F
+  #                  2017%2F
+  #                  001
+  #                  %2FNLDAS_FORA0125_H.A
+  #                  20170101.
+  #                  0000
+  #                  .020.nc
+  #                  &SERVICE=L34RS_LDAS
+  #                  &VERSION=1.02
+  #                  &SHORTNAME=NLDAS_FORA0125_H
+  #                  &BBOX=25%2C-125%2C53%2C-67
+  #                  &LABEL=NLDAS_FORA0125_H.A
+  #                  20170101.0000.
+  #                  020.nc.SUB.nc4
+  #                  &FORMAT=bmM0Lw
+  #                  &DATASET_VERSION=2.0
+  
+    URL_FORA <- paste('https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORA0125_H.2.0%2F',
+                    yearOut, '%2F',
+                    str_pad(as.numeric(yday(as.Date(paste0(yearOut,"-", monthOut,'-' ,dayOut)))), 3, pad = "0"), ## The URL changes for every chunk of 24 hours
+                    '%2FNLDAS_FORA0125_H.A',
+                    yearOut, monthOut, dayOut, '.',
+                    hourOut,  
+                    '.020.nc',
+                    '&SERVICE=L34RS_LDAS',
+                    '&VERSION=1.02',
+                    '&SHORTNAME=NLDAS_FORA0125_H',
+                    '&BBOX=',
+                    round(extent[2], 2),'%2C', # In the new version of the URL, the coordinates are only up to 2 digits
+                    round(extent[1], 2),'%2C',
+                    round(extent[4], 2),'%2C',
+                    round(extent[3], 2),
+                    '&LABEL=NLDAS_FORA0125_H.A',
+                    yearOut, monthOut, dayOut, '.',
+                    hourOut,
+                    '.020.nc.SUB.nc4',
+                    '&FORMAT=bmM0Lw',
+                    #'&VARIABLES=Tair', #Commenting this out gets all the variables
+                    '&DATASET_VERSION=2.0',
+                    sep='')  
+  
   #Try updating to match this which comes from the hourly forcing subsetting from GES DISC
   #https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORB0125_H.2.0%2F2017%2F001%2FNLDAS_FORB0125_H.A20170101.0000.020.nc&LABEL=NLDAS_FORB0125_H.A20170101.0000.020.nc.SUB.nc4&VERSION=1.02&SERVICE=L34RS_LDAS&FORMAT=bmM0Lw&VARIABLES=Tair&SHORTNAME=NLDAS_FORB0125_H&BBOX=41.759%2C-74.06%2C41.762%2C-74.057&DATASET_VERSION=2.0
-  URL2 <- paste('https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORB0125_H.2.0%2F',
+  #This will get FORB which doesn't have long wave radiation 
+  URL_FORB <- paste('https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORB0125_H.2.0%2F',
                yearOut, '%2F',
                str_pad(as.numeric(yday(as.Date(paste0(yearOut,"-", monthOut,'-' ,dayOut)))), 3, pad = "0"), ## The URL changes for every chunk of 24 hours
                '%2FNLDAS_FORB0125_H.A',
                yearOut, monthOut, dayOut, '.',
                hourOut,  
                '.020.nc',
-               '&LABEL=NLDAS_FORB0125_H.A',
+               '&LABEL=NLDAS_FORA0125_H.A',
                yearOut, monthOut, dayOut, '.',
                hourOut,
                '.020.nc.SUB.nc4&',
                'VERSION=1.02&SERVICE=L34RS_LDAS&FORMAT=bmM0Lw',
                #'&VARIABLES=Tair', #Commenting this out gets all the variables
-               '&SHORTNAME=NLDAS_FORB0125_H',
+               '&SHORTNAME=NLDAS_FORA0125_H',
                '&BBOX=', 
                round(extent[2], 2),'%2C', # In the new version of the URL, the coordinates are only up to 2 digits
                round(extent[1], 2),'%2C',
@@ -127,7 +172,7 @@ for (i in 1:length(out.ts)) {
   # x = download.file(URL,destfile = paste(filename,'.nc',sep=''),mode = 'wb',quiet = T)
   
   
-  lk <- URL2
+  lk <- URL_FORA #Can also use FORB if not needing long wave radiation
   
   #wget:
   #r <- GET(lk,
@@ -165,7 +210,7 @@ nc_files<-list.files(dumpdir_nc)
 ### Can download one instance of data from the earthdata site and see how many columns there are
 ### use 'nc_open(filename)' to see how many cells there are
 ###########################################################
-br<-nc_open(paste0(dumpdir_nc,nc_files[24]))
+br<-nc_open(paste0(dumpdir_nc,nc_files[1]))
 br
 nc_close(br)
 #if there are only 2 variables, time and the variable, then there should be only 1 cell####
@@ -174,16 +219,23 @@ cellNum=1 #number of cells in your area of interest
 ###########################################################
 ### Set up the output data frame
 ###########################################################
-vars_nc = c('SWdown', #standard_name: Surface incident shortwave radiation #long_name: Shortwave radiation flux downwards (surface) #units: W m-2
-            'Rainf', #standard_name: Total precipitation #long_name: Total precipitation #units: kg m-2
-            'CRainf', #standard_name: Convective precipitation #long_name: Convective precipitation #units: kg m-2
-            'ACond', #standard_name: Aerodynamic conductance #long_name: Aerodynamic conductance #units: m s-1
-            'Tair', #standard_name: Near surface air temperature #long_name: NARR hybrid level Temperature #units: K
+#vars for FORA - FORB is slightly different####
+vars_nc = c('Tair', #standard_name: Near surface air temperature #long_name: NARR hybrid level Temperature #units: K
             'Qair', #standard_name: Near surface specific humidity #long_name: NARR hybrid level Specific humidity #units: kg kg-1
             'PSurf', #standard_name: Near surface pressure #long_name: NARR hybrid level Surface pressure #units: Pa
             'Wind_E', #standard_name: Near surface eastward wind component #long_name: NARR hybrid level Zonal wind speed #units: m s-1
             'Wind_N', #standard_name: Near surface northward wind component #long_name: NARR hybrid level Meridional wind speed #units: m s-1
-            'PhiS') #standard_name: Near surface geopotential height #long_name: NARR hybrid level Geopotential height #units: gpm
+            'LWdown', #standard_name: Surface incident longwave radiation #long_name: Longwave radiation flux downwards (surface) #W m-2
+            'CRainf_frac', #standard_name: Convective precipitation fraction #long_name: Fraction of total precipitation that is convective #units: fraction
+            'CAPE', #standard_name: Convective Available Potential Energy #long_name: Convective Available Potential Energy #units: J kg-1
+            'PotEvap', #standard_name: Potential evaporation #long_name: Potential evaporation #units: kg m-2
+            'Rainf', #standard_name: Total precipitation #long_name: Total precipitation #units: kg m-2
+            'SWdown' #standard_name: Surface incident shortwave radiation #long_name: Shortwave radiation flux downwards (surface) #units: W m-2
+            )
+           #vars for FORB####
+           #'CRainf', #standard_name: Convective precipitation #long_name: Convective precipitation #units: kg m-2
+           #'ACond', #standard_name: Aerodynamic conductance #long_name: Aerodynamic conductance #units: m s-1
+           #'PhiS' #standard_name: Near surface geopotential height #long_name: NARR hybrid level Geopotential height #units: gpm
 
 
 
@@ -307,4 +359,4 @@ head(final.box)
 
 ###########STOPPED HERE#####
 #LINE 326 in the code from Heather####
-#Missing some variables including LW radiation which we need
+
