@@ -21,13 +21,18 @@ library(curl)
 library(stringr)
 library(tidyverse)
 
+#Run the functions code####
+source("02_Scripts/00_ThinIce-GLM-Functions.R")
+
 ###########################################################
 ### Point to dump directory where data will be saved
 ###########################################################
-lake<-"06_Mohonk"
-dumpdir_nc = paste0(lake,"/input/NLDAS/") #where to dump nc files
-dumpdir_csv = paste0(lake,"/input/NLDAS_csv/") #where to dump csv files
-dumpdir_compiled = paste0(lake,"/input/NLDAS_compiled/") #where to dump the compiled NLDAS data
+lakeNumber<-"06"
+lakeName<-"Mohonk"
+dumpdir_nc = paste0(lakeNumber,"_",lakeName,"/input/NLDAS/") #where to dump nc files
+dumpdir_csv = paste0(lakeNumber,"_",lakeName,"/input/NLDAS_csv/") #where to dump csv files
+dumpdir_compiled = paste0(lakeNumber,"_",lakeName,"/input/NLDAS_compiled/") #where to dump the compiled NLDAS data
+dumpdir_input = paste0(lakeNumber,"_",lakeName,"/input/") #where to dump the GLM met data 
 
 ###########################################################
 ### Enter password information
@@ -357,6 +362,49 @@ final.box <- final.box %>%
   mutate(local_dateTime = with_tz(dateTime, tzone = local_tz_set))
 head(final.box)
 
-###########STOPPED HERE#####
-#LINE 326 in the code from Heather####
+#Ranme and calculate some import drivers for GLM-AED####
+drivers <- final.box %>% 
+  dplyr::rename(PotentialEvap = PotEvap, ##
+                LongWave.W_m2=LWdown, 
+                ShortWave.W_m2=SWdown,
+                ConvectivePotentialEnergy = CAPE,
+                Precipitation = Rainf,
+                SpecHumidity.kg_kg=Qair,
+                WindSpeed_Zonal = Wind_E, 
+                WindSpeed_Meridional = Wind_N,
+                AirTemp2m = Tair,
+                SurfPressure.Pa = PSurf)%>%
+  dplyr::mutate(RelHum = 100*SpecHumidity.kg_kg/qsat(AirTemp2m-273.15, SurfPressure.Pa*0.01), #calculate relative humidity
+                WindSpeed.m_s=sqrt(WindSpeed_Zonal^2+WindSpeed_Meridional^2), #calculate wind speed from the two directions###
+                AirTemp.C = AirTemp2m - 273.15,  #Convert air temperature to celcius from kelvin
+                Rain.m_day = Precipitation*24/1000)%>%  #Get precip in units of meters per 
+  dplyr::select(local_dateTime,AirTemp.C,ShortWave.W_m2,LongWave.W_m2,
+                SpecHumidity.kg_kg,RelHum,WindSpeed.m_s,Rain.m_day,SurfPressure.Pa)
+
+              #Ignoring convective precip: ConvectivePrecip = CONVfrac*Precipitation, convective precip is heavy localized rainfall like summer thunderstorms
+
+#Confirm that there is not repeated time steps
+drivers |> 
+  group_by(local_dateTime) %>% 
+  filter(n()>1) 
+
+#Format specifically for met GLM data####
+drivers <- drivers |> 
+  rename(time = local_dateTime,
+         ShortWave = ShortWave.W_m2,
+         LongWave = LongWave.W_m2,
+         AirTemp = AirTemp.C,
+         WindSpeed = WindSpeed.m_s,
+         Rain = Rain.m_day) |> 
+  select(-c(SurfPressure.Pa, SpecHumidity.kg_kg))
+
+#Plot a few of the drivers####
+plot(drivers$time,drivers$Rain,type = 'l')
+plot(drivers$time,drivers$ShortWave,type = 'l')
+
+
+#save combined nldas file####
+write_csv(drivers,paste0(dumpdir_input,lakeName, '_', 
+                   format(as.POSIXct(startdatetime), '%Y_%m_%d'),
+                   '_', format(as.POSIXct(enddatetime), '%Y_%m_%d'),'_hourly.csv'))
 

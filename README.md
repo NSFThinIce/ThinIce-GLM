@@ -42,7 +42,10 @@ The most recent releases available are here:
 GLM3.3.1: https://github.com/AquaticEcoDynamics/releases/tree/main/GLM-AED<br>
 
 An ensemble model from Tadhg Moore and Chris McBride in NZ:
-https://limnotrack.github.io/AEME/articles/aeme-inputs.html
+https://limnotrack.github.io/AEME/articles/aeme-inputs.html<br>
+
+North American Land Data Assimilation System (NLDAS) has hourly meteorological data here:
+https://disc.gsfc.nasa.gov/datasets/NLDAS_FORA0125_H_2.0/summary?keywords=NLDAS<br>
 
 ## Contacts
 
