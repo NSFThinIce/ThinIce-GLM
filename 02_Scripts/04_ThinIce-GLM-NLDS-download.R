@@ -383,6 +383,10 @@ drivers <- final.box %>%
 
               #Ignoring convective precip: ConvectivePrecip = CONVfrac*Precipitation, convective precip is heavy localized rainfall like summer thunderstorms
 
+#########################INCLUDE SNOW HERE###############################
+#From All models use a threshold air temperature of 0°C to partition the precipitation inputs, such that if the air temperature is above this value then the precipitation is considered to be rainfall, and is considered to be snowfall if the air temperature is below this value.
+#Xia et al. 2012: https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2011JD016048
+
 #Confirm that there is not repeated time steps
 drivers |> 
   group_by(local_dateTime) %>% 
