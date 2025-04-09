@@ -54,8 +54,8 @@ extent = as.numeric(c(-74.06,41.75,-74.05,41.76))
 ###########################################################
 ### Set timeframe
 ###########################################################
-startdatetime = '2017-01-01 00:00:00'
-enddatetime = '2017-01-01 23:00:00'
+startdatetime = '2017-03-10 00:00:00'
+enddatetime = '2017-03-31 23:00:00'
 loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad when you go to collate and it's a mess. 
 
 
@@ -202,8 +202,14 @@ for (i in 1:length(out.ts)) {
   #Sys.sleep(2)
   
 }
+
+#If there is time out errors, here is a possible way to fix it:
+#https://stackoverflow.com/questions/35282928/how-do-i-set-a-timeout-for-utilsdownload-file-in-r
+
 # Stop the clock
 proc.time() - ptm
+
+
 
 #### step 2: save each variable as a new csv ####
 
@@ -377,13 +383,15 @@ drivers <- final.box %>%
   dplyr::mutate(RelHum = 100*SpecHumidity.kg_kg/qsat(AirTemp2m-273.15, SurfPressure.Pa*0.01), #calculate relative humidity
                 WindSpeed.m_s=sqrt(WindSpeed_Zonal^2+WindSpeed_Meridional^2), #calculate wind speed from the two directions###
                 AirTemp.C = AirTemp2m - 273.15,  #Convert air temperature to celcius from kelvin
-                Rain.m_day = Precipitation*24/1000)%>%  #Get precip in units of meters per 
+                )%>%  
+  dplyr::mutate(Snow.m_day=ifelse(AirTemp.C<0,Precipitation*24/1000,0),
+                Rain.m_day=ifelse(AirTemp.C>=0,Precipitation*24/1000,0)
+                )%>% #Split precip into snow (when air temp is <0) or rain (when air temp >0), see note below 
   dplyr::select(local_dateTime,AirTemp.C,ShortWave.W_m2,LongWave.W_m2,
-                SpecHumidity.kg_kg,RelHum,WindSpeed.m_s,Rain.m_day,SurfPressure.Pa)
+                SpecHumidity.kg_kg,RelHum,WindSpeed.m_s,Rain.m_day,Snow.m_day,SurfPressure.Pa)
 
               #Ignoring convective precip: ConvectivePrecip = CONVfrac*Precipitation, convective precip is heavy localized rainfall like summer thunderstorms
-
-#########################INCLUDE SNOW HERE###############################
+#For Snow####
 #From All models use a threshold air temperature of 0°C to partition the precipitation inputs, such that if the air temperature is above this value then the precipitation is considered to be rainfall, and is considered to be snowfall if the air temperature is below this value.
 #Xia et al. 2012: https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2011JD016048
 
@@ -393,17 +401,19 @@ drivers |>
   filter(n()>1) 
 
 #Format specifically for met GLM data####
-drivers <- drivers |> 
+drivers <- drivers %>% 
   rename(time = local_dateTime,
          ShortWave = ShortWave.W_m2,
          LongWave = LongWave.W_m2,
          AirTemp = AirTemp.C,
          WindSpeed = WindSpeed.m_s,
-         Rain = Rain.m_day) |> 
+         Rain = Rain.m_day,
+         Snow = Snow.m_day ) %>% 
   select(-c(SurfPressure.Pa, SpecHumidity.kg_kg))
 
 #Plot a few of the drivers####
 plot(drivers$time,drivers$Rain,type = 'l')
+plot(drivers$time,drivers$Snow,type = 'l')
 plot(drivers$time,drivers$ShortWave,type = 'l')
 
 
