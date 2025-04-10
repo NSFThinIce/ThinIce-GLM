@@ -27,11 +27,13 @@ source("02_Scripts/00_ThinIce-GLM-Functions.R")
 ###########################################################
 ### Point to dump directory where data will be saved
 ###########################################################
-lakeNumber<-"06"
-lakeName<-"Mohonk"
-dumpdir_nc = paste0(lakeNumber,"_",lakeName,"/input/NLDAS/") #where to dump nc files
-dumpdir_csv = paste0(lakeNumber,"_",lakeName,"/input/NLDAS_csv/") #where to dump csv files
-dumpdir_compiled = paste0(lakeNumber,"_",lakeName,"/input/NLDAS_compiled/") #where to dump the compiled NLDAS data
+#This takes about 2.7 seconds per download. This is 65 seconds per day, ~32 minutes per month, 6.6 hours per year
+lakeNumber<-"06" #number of the folder####
+lakeName<-"Mohonk" #Lake name here####
+year<-2017 #set the year here####
+dumpdir_nc = paste0(lakeNumber,"_",lakeName,"/input/NLDAS/",year,"/") #where to dump nc files
+dumpdir_csv = paste0(lakeNumber,"_",lakeName,"/input/NLDAS_csv/",year,"/") #where to dump csv files
+dumpdir_compiled = paste0(lakeNumber,"_",lakeName,"/input/NLDAS_compiled/",year,"/") #where to dump the compiled NLDAS data
 dumpdir_input = paste0(lakeNumber,"_",lakeName,"/input/") #where to dump the GLM met data 
 
 ###########################################################
@@ -54,8 +56,22 @@ extent = as.numeric(c(-74.06,41.75,-74.05,41.76))
 ###########################################################
 ### Set timeframe
 ###########################################################
-startdatetime = '2017-03-10 00:00:00'
-enddatetime = '2017-03-31 23:00:00'
+#Get the list of files####
+nc_files<-list.files(dumpdir_nc)
+
+#If the folder has character(0) then there is nothing in it (or the folder doesn't exist)
+#start at January 1 of the year
+if(length(nc_files)==0){
+  startdatetime = paste0(year,'-01-01 00:00:00')
+}else{
+  year0<-substr(nc_files[length(nc_files)],1,4)
+  month0<-substr(nc_files[length(nc_files)],5,6)
+  day0<-substr(nc_files[length(nc_files)],7,8)
+  hour0<-substr(nc_files[length(nc_files)],9,10)
+  startdatetime<-paste0(year,'-',month0,'-',day0,' ',hour0,':00:00')
+}
+
+enddatetime = paste0(year,'-12-31 23:00:00') #set the end date at the end of the year
 loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad when you go to collate and it's a mess. 
 
 
@@ -203,7 +219,7 @@ for (i in 1:length(out.ts)) {
   
 }
 
-#If there is time out errors, here is a possible way to fix it:
+#If there are time out errors (it seems like it might be a campus issue with a firewall), here is a possible way to fix it:
 #https://stackoverflow.com/questions/35282928/how-do-i-set-a-timeout-for-utilsdownload-file-in-r
 
 # Stop the clock
@@ -214,7 +230,7 @@ proc.time() - ptm
 #### step 2: save each variable as a new csv ####
 
 #Location where nc files are stored: dumpdir_nc
-nc_files<-list.files(dumpdir_nc)
+#nc_files<-list.files(dumpdir_nc)
 
 ###########################################################
 ### Need to know how many cells your lake falls within
@@ -262,8 +278,10 @@ for (l in 1:length(vars_nc)){
 ###########################################################
 ### Run file list loop
 ###########################################################
+
 # Start the clock!
 ptm <- proc.time()
+#About 11 seconds per file####
 
 #Loop through each of the nc files####
 for (i in 1:length(nc_files)) {
@@ -272,7 +290,7 @@ for (i in 1:length(nc_files)) {
   #*Loop through the variables####
   for (v in 1:length(vars_nc)) {
     nldasvar <- vars_nc[v]
-    br = nc_open(paste0(dumpdir_nc, '/', nc_files[i]))
+    br = nc_open(paste0(dumpdir_nc, nc_files[i]))
     output[[v]][i,1] =  as.POSIXct(paste0(substr(nc_files[i], 1, 4),'-', substr(nc_files[i], 5,6), '-', substr(nc_files[i], 7,8), ' ', substr(nc_files[i], 9,10), ':', substr(nc_files[i], 11,12)), tz=loc_tz)
     output[[v]][i,-1] = ncvar_get(br, nldasvar)
     nc_close(br)
