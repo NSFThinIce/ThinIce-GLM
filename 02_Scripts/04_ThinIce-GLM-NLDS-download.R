@@ -25,16 +25,29 @@ library(tidyverse)
 source("02_Scripts/00_ThinIce-GLM-Functions.R")
 
 ###########################################################
-### Point to dump directory where data will be saved
+### Enter in some lake and year relevant information####
 ###########################################################
-#This takes about 2.7 seconds per download. This is 65 seconds per day, ~32 minutes per month, 6.6 hours per year
 lakeNumber<-"06" #number of the folder####
 lakeName<-"Mohonk" #Lake name here####
 year<-2017 #set the year here####
+#enter the timezone you would like to have the final data in. see OlsonNames() for options
+local_tz_set = 'EST'
+
+
+###########################################################
+### Point to dump directory where data will be saved
+###########################################################
 dumpdir_nc = paste0(lakeNumber,"_",lakeName,"/input/NLDAS/",year,"/") #where to dump nc files
 dumpdir_csv = paste0(lakeNumber,"_",lakeName,"/input/NLDAS_csv/",year,"/") #where to dump csv files
 dumpdir_compiled = paste0(lakeNumber,"_",lakeName,"/input/NLDAS_compiled/",year,"/") #where to dump the compiled NLDAS data
 dumpdir_input = paste0(lakeNumber,"_",lakeName,"/input/") #where to dump the GLM met data 
+
+#Need to make sure that folders exist for that year####
+#If they do not exist, then this will create the folder####
+if(!file.exists(dumpdir_nc)){dir.create(file.path(dumpdir_nc))}
+if(!file.exists(dumpdir_csv)){dir.create(file.path(dumpdir_csv))}
+if(!file.exists(dumpdir_compiled)){dir.create(file.path(dumpdir_compiled))}
+
 
 ###########################################################
 ### Enter password information
@@ -78,6 +91,9 @@ loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad whe
 # sequence the datetime over your desired time period
 out.ts = seq.POSIXt(as.POSIXct(startdatetime, tz = loc_tz),as.POSIXct(enddatetime,tz=loc_tz), by = 'hour')
 
+  #In case any need rerunning, can create a specific list here. SOmetimes, it appears that the download doesn;t work. You can tell this if the nc file size is 2KB instead of 90KB 
+  #out.ts<-c(as.POSIXct("2017-07-30 21:00:00", tz = loc_tz),as.POSIXct("2017-07-31 07:00:00", tz = loc_tz),as.POSIXct("2017-08-02 02:00:00", tz = loc_tz),as.POSIXct("2017-09-03 14:00:00", tz = loc_tz),as.POSIXct("2017-09-23 03:00:00", tz = loc_tz),as.POSIXct("2017-09-24 07:00:00", tz = loc_tz),as.POSIXct("2017-09-24 18:00:00", tz = loc_tz),as.POSIXct("2017-09-25 08:00:00", tz = loc_tz),as.POSIXct("2017-11-21 11:00:00", tz = loc_tz),as.POSIXct("2017-11-23 17:00:00", tz = loc_tz),as.POSIXct("2017-12-16 13:00:00", tz = loc_tz))
+
 # Create output list of tables
 output = list()
 
@@ -86,7 +102,7 @@ output = list()
 ###########################################################
 # Start the clock!
 ptm <- proc.time()
-
+#This takes about 2.7 seconds per download. This is 65 seconds per day, ~32 minutes per month, 6.6 hours per year
 for (i in 1:length(out.ts)) {
   print(out.ts[i])
   yearOut = year(out.ts[i])
@@ -281,9 +297,11 @@ for (l in 1:length(vars_nc)){
 
 # Start the clock!
 ptm <- proc.time()
-#About 11 seconds per file####
+#About 0.1 seconds per file, ~15 minutes for the year####
 
 #Loop through each of the nc files####
+#*This loop will crash if any of the nc files have not downloaded correctly####
+#**In that case, find the files that have not downloaded correctly by going to the folder and seeing which are <90KB, then go up to setting up the out.ts with specific dates (~Line 82) and rerun the download loop for those files
 for (i in 1:length(nc_files)) {
   #*Print out the nc file name####
   print(nc_files[i])
@@ -314,20 +332,27 @@ for (f in 1:length(vars_nc)){
 
 box = 1 # Chosen cell of 'cellNum' from combineNLDAS.R, you'll have to look at these to figure out which one is best.
 
-#enter the timezone you would like to have the final data in. see OlsonNames() for options
-local_tz_set = 'EST'
-
 ###########################################################
 ### run loop to collate all data
 ###########################################################
 
-# make a list of the files previously collated
+# # make a list of the files previously collated
 files = list.files(dumpdir_csv, pattern = '.csv')
-
-#make a null dataframme with the sequence of datetimes from above
-final.box = data.frame(dateTime = seq.POSIXt(
-  as.POSIXct(startdatetime, tz= loc_tz),
-  as.POSIXct(enddatetime,tz=loc_tz),by = 'hour'))
+# 
+# #Find the date from the first and last nc file####
+# nc_file_startdatetime<-nc_files[1]
+# 
+# year_final<-substr(nc_files[length(nc_files)],1,4)
+# month_final<-substr(nc_files[length(nc_files)],5,6)
+# day_final<-substr(nc_files[length(nc_files)],7,8)
+# hour_final<-substr(nc_files[length(nc_files)],9,10)
+# nc_file_enddatetime<-paste0(year,'-',month0,'-',day0,' ',hour0,':00:00')
+# 
+# 
+# #make a null dataframme with the sequence of datetimes from above
+# final.box = data.frame(dateTime = seq.POSIXt(
+#   as.POSIXct(output[[1]]$dateTime[1], tz= loc_tz),
+#   as.POSIXct(output[[1]]$dateTime[length(output[[1]]$dateTime)],tz=loc_tz),by = 'hour'))
 
 #index each box csv to break out each of the cells
 for (i in 1:length(files)){
@@ -348,15 +373,17 @@ for (i in 1:length(files)){
   #   }
   # }
   
-  # Total time series
+  # Total time series from first dateTime to last####
   out = data.frame(dateTime = seq.POSIXt(
-    as.POSIXct(startdatetime, tz= loc_tz),
-    as.POSIXct(enddatetime,tz=loc_tz),by = 'hour')) 
+    as.POSIXct(df$dateTime[1], tz= loc_tz),
+    as.POSIXct(df$dateTime[length(df$dateTime)],tz=loc_tz),by = 'hour')) 
   
+  #Join together to check for any missing dates in time series####
   missingDates = out |> 
     anti_join(df)
   print(nrow(missingDates)) # Check for missing dates. 
   
+  #Checking for replicate time stamps####
   out = out %>% 
     left_join(df)
   print(nrow(out))
@@ -369,9 +396,12 @@ for (i in 1:length(files)){
                        format(as.POSIXct(startdatetime), '%Y-%m-%d'),
                        '_', format(as.POSIXct(enddatetime), '%Y-%m-%d'),
                        '_', vars_nc[i],'.csv'))
-  
-  final.box <- final.box %>% 
-    left_join(out)
+  #If it is the first file, then use that as the output, if not, then merge with previous####
+  if(i==1){final.box<-out}else{
+    final.box <- final.box %>% 
+      left_join(out)  
+  }
+
 }
 
 ####### Create a Single Dataframe and adjust time zone###########
@@ -379,7 +409,7 @@ head(final.box)
 tail(final.box)
 which(duplicated(final.box)) #check for duplicate time stamps - if this list is long, something is wrong!! There should be ZERO duplicated timestamps.
 # final.box <- distinct(final.box)
-which(is.na(final.box$TMP)) # check for NA values
+which(is.na(final.box$Tair)) # check for NA values in specific columns
 
 # adjust to local timezone #
 final.box <- final.box %>% 
@@ -435,8 +465,23 @@ plot(drivers$time,drivers$Snow,type = 'l')
 plot(drivers$time,drivers$ShortWave,type = 'l')
 
 
+#Find the initial and final day for the file name####
+#This is now in local time zone so it might be a day earlier than January 1
+year_start<-substr(drivers$time[1],1,4)
+month_start<-substr(drivers$time[1],6,7)
+day_start<-substr(drivers$time[1],9,10)
+
+#This is now in local time zone so it might be a day earlier than January 1
+year_final<-substr(drivers$time[length(drivers$time)],1,4)
+month_final<-substr(drivers$time[length(drivers$time)],6,7)
+day_final<-substr(drivers$time[length(drivers$time)],9,10)
+
+
+drivers$time[1]
 #save combined nldas file####
 write_csv(drivers,paste0(dumpdir_input,lakeName, '_', 
-                   format(as.POSIXct(startdatetime), '%Y_%m_%d'),
-                   '_', format(as.POSIXct(enddatetime), '%Y_%m_%d'),'_hourly.csv'))
+                   paste(year_start,month_start,day_start,sep="_"),
+                   '_to_', 
+                   paste(year_final,month_final,day_final,sep="_"),
+                   '_hourly.csv'))
 
