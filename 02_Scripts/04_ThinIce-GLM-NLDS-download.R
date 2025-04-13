@@ -10,7 +10,17 @@
 # v 04Mar2021: BGS updated to remove hardcoding: only first 43 lines need to be edited
 
 ##############Add in install.package statements here########### 
+if(!require('RCurl')){install.packages(RCurl)} #Accessing files through URLS
+if(!require('lubridate')){install.packages(lubridate)}
+if(!require('raster')){install.packages(raster)}
+if(!require('ncdf4')){install.packages(ncdf4)} #help downloading the data
+if(!require('sf')){install.packages(sf)}
+if(!require('httr')){install.packages(httr)}
+if(!require('curl')){install.packages(curl)}
+if(!require('stringr')){install.packages(stringr)}
+if(!require('tidyverse')){install.packages(tidyverse)}
 
+#Load libraries#####
 library(RCurl)
 library(lubridate)
 library(raster)
@@ -29,7 +39,7 @@ source("02_Scripts/00_ThinIce-GLM-Functions.R")
 ###########################################################
 lakeNumber<-"06" #number of the folder####
 lakeName<-"Mohonk" #Lake name here####
-year<-2017 #set the year here####
+year<-2018 #set the year here####
 #enter the timezone you would like to have the final data in. see OlsonNames() for options
 local_tz_set = 'EST'
 
@@ -231,7 +241,7 @@ for (i in 1:length(out.ts)) {
                                 path = paste(dumpdir_nc, filename, '_', loc_tz, '.nc',sep=''), 
                                 handle = h)
   
-  #Sys.sleep(2)
+  Sys.sleep(2)
   
 }
 

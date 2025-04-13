@@ -8,7 +8,7 @@
 #install packages
 if(!require('GLM3r')){remotes::install_github("FLARE-forecast/GLM3r")}
 if(!require('glmtools')){install.packages(glmtools)}
-if(!require('tidyverse')){install.packages()}
+if(!require('tidyverse')){install.packages(tidyverse)}
 
 #Necessary libraries
 library(glmtools)
