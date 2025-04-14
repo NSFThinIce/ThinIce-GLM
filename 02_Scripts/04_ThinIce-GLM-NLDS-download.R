@@ -65,6 +65,7 @@ if(!file.exists(dumpdir_compiled)){dir.create(file.path(dumpdir_compiled))}
 #https://urs.earthdata.nasa.gov/profile <-- GET A EARTHDATA LOGIN
 username = 'thiniceproject'
 password = 'Cyanotoxin1234!!'
+
 #in addition, make sure you have authorized your account access to the GEODISC archives:
 # https://disc.gsfc.nasa.gov/earthdata-login
 
@@ -112,6 +113,12 @@ output = list()
 ###########################################################
 # Start the clock!
 ptm <- proc.time()
+
+#Set teh timeout limit - might help if you are gettinng connection timed out after 10006 milliseconds error message
+#getOption('timeout')
+#options(timeout=20006)
+
+
 #This takes about 2.7 seconds per download. This is 65 seconds per day, ~32 minutes per month, 6.6 hours per year
 for (i in 1:length(out.ts)) {
   print(out.ts[i])
