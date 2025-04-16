@@ -18,7 +18,7 @@ ELA239 (Contact: Scott Higgins) <br>
   a. data: various data goes here including data prior to being ready for GLM, NLDAS meteorological data goes here<br>
   b. input: this is the data input to GLM including inflows, and met data <br>
   c. output: the model will generate output to be exported here<br>
-4. Download NLDAS data: this comes from  <br>
+4. Download NLDAS data: this comes from GES DISC NLDAS (see links below)<br>
   a. This happens in 02_Scripts/04_ThinIce-GLM-NLDS-download.R script, details there<br>
   b. Alternatively local met stations can be used if you have the following variables on hourly timescales; <br> 
       ShortWave	LongWave	AirTemp	RelHum	WindSpeed	Rain	Snow <br>
