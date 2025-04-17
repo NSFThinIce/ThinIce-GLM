@@ -39,7 +39,7 @@ source("02_Scripts/00_ThinIce-GLM-Functions.R")
 ###########################################################
 lakeNumber<-"06" #number of the folder####
 lakeName<-"Mohonk" #Lake name here####
-year<-2019 #set the year here####
+year<-2020 #set the year here####
 local_tz_set = 'EST' #enter the timezone you would like to have the final data in. see OlsonNames() for options####
 loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad when you go to collate and it's a mess.####
 
