@@ -103,7 +103,7 @@ loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad whe
 out.ts = seq.POSIXt(as.POSIXct(startdatetime, tz = loc_tz),as.POSIXct(enddatetime,tz=loc_tz), by = 'hour')
 
   #In case any need rerunning, can create a specific list here. SOmetimes, it appears that the download doesn;t work. You can tell this if the nc file size is 2KB instead of 90KB 
-  #out.ts<-c(as.POSIXct("2017-07-30 21:00:00", tz = loc_tz),as.POSIXct("2017-07-31 07:00:00", tz = loc_tz),as.POSIXct("2017-08-02 02:00:00", tz = loc_tz),as.POSIXct("2017-09-03 14:00:00", tz = loc_tz),as.POSIXct("2017-09-23 03:00:00", tz = loc_tz),as.POSIXct("2017-09-24 07:00:00", tz = loc_tz),as.POSIXct("2017-09-24 18:00:00", tz = loc_tz),as.POSIXct("2017-09-25 08:00:00", tz = loc_tz),as.POSIXct("2017-11-21 11:00:00", tz = loc_tz),as.POSIXct("2017-11-23 17:00:00", tz = loc_tz),as.POSIXct("2017-12-16 13:00:00", tz = loc_tz))
+  #out.ts<-c(as.POSIXct("2019-01-11 07:00:00", tz = loc_tz),as.POSIXct("2019-01-12 01:00:00", tz = loc_tz),as.POSIXct("2019-06-24 03:00:00", tz = loc_tz),as.POSIXct("2019-11-19 21:00:00", tz = loc_tz))
 
 # Create output list of tables
 output = list()
@@ -311,6 +311,10 @@ for (l in 1:length(vars_nc)){
 ###########################################################
 ### Run file list loop
 ###########################################################
+
+#Requery the nc_files as it might have updated
+#Get the list of files####
+nc_files<-list.files(dumpdir_nc)
 
 # Start the clock!
 ptm <- proc.time()
