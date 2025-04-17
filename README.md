@@ -20,6 +20,7 @@ ELA239 (Contact: Scott Higgins) <br>
   c. output: the model will generate output to be exported here<br>
 4. Download NLDAS data: this comes from GES DISC NLDAS (see links below)<br>
   a. This happens in 02_Scripts/04_ThinIce-GLM-NLDS-download.R script, details there<br>
+      This is going take awhile to get each year collated<br>
   b. Alternatively local met stations can be used if you have the following variables on hourly timescales; <br> 
       ShortWave	LongWave	AirTemp	RelHum	WindSpeed	Rain	Snow <br>
 5. Update the nml file for your lake (morphometry, lat/long, data range, etc...) <br>
@@ -27,6 +28,14 @@ ELA239 (Contact: Scott Higgins) <br>
   a. Check outputs <br>
 7. Calibrate and validate model <br>
   a. still working on this one <br>
+
+## Tips for working with gitHub with big numbers of files
+1. Use the terminal tab in the Console window - there you can access your system shell and enter git commands directly
+  a. In the 02_Scripts/HelpWithGit.txt is a small compilation of some troubleshooting
+  b. E.g., if you want to add a bunch of files to commit, it can be tedious to check 1000s of boxes in the Git tab in the Workspace Browser window<br>
+      Instead, in the terminal tab, type 'git add -A' (without the quotes), and press enter
+      All files will be added to the commit window. You can proceed by pressing Commit, entering a Commit message, committing, and pushing.<br>
+
  
 ## Fun links that might be informative or helpful:
 Best place to find the description of the GLM nml configuration file and everything that it does:

@@ -40,8 +40,8 @@ source("02_Scripts/00_ThinIce-GLM-Functions.R")
 lakeNumber<-"06" #number of the folder####
 lakeName<-"Mohonk" #Lake name here####
 year<-2019 #set the year here####
-#enter the timezone you would like to have the final data in. see OlsonNames() for options
-local_tz_set = 'EST'
+local_tz_set = 'EST' #enter the timezone you would like to have the final data in. see OlsonNames() for options####
+loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad when you go to collate and it's a mess.####
 
 
 ###########################################################
@@ -96,7 +96,6 @@ if(length(nc_files)==0){
 }
 
 enddatetime = paste0(year,'-12-31 23:00:00') #set the end date at the end of the year
-loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad when you go to collate and it's a mess. 
 
 
 # sequence the datetime over your desired time period
@@ -262,15 +261,29 @@ proc.time() - ptm
 
 #### step 2: save each variable as a new csv ####
 
-#Location where nc files are stored: dumpdir_nc
-#nc_files<-list.files(dumpdir_nc)
+#Requery the nc_files as it might have updated
+#Get the list of files####
+nc_files_updated<-list.files(dumpdir_nc)
+
+#Reget the start and end time####
+year_start_updated<-substr(nc_files_updated[1],1,4)
+month_start_updated<-substr(nc_files_updated[1],5,6)
+day_start_updated<-substr(nc_files_updated[1],7,8)
+hour_start_updated<-substr(nc_files_updated[1],9,10)
+startdatetime_updated<-paste0(year_start_updated,'-',month_start_updated,'-',day_start_updated,' ',hour_start_updated,':00:00')
+
+year_end_updated<-substr(nc_files_updated[length(nc_files_updated)],1,4)
+month_end_updated<-substr(nc_files_updated[length(nc_files_updated)],5,6)
+day_end_updated<-substr(nc_files_updated[length(nc_files_updated)],7,8)
+hour_end_updated<-substr(nc_files_updated[length(nc_files_updated)],9,10)
+enddatetime_updated<-paste0(year_end_updated,'-',month_end_updated,'-',day_end_updated,' ',hour_end_updated,':00:00')
 
 ###########################################################
 ### Need to know how many cells your lake falls within
 ### Can download one instance of data from the earthdata site and see how many columns there are
 ### use 'nc_open(filename)' to see how many cells there are
 ###########################################################
-br<-nc_open(paste0(dumpdir_nc,nc_files[1]))
+br<-nc_open(paste0(dumpdir_nc,nc_files_updated[1]))
 br
 nc_close(br)
 #if there are only 2 variables, time and the variable, then there should be only 1 cell####
@@ -312,10 +325,6 @@ for (l in 1:length(vars_nc)){
 ### Run file list loop
 ###########################################################
 
-#Requery the nc_files as it might have updated
-#Get the list of files####
-nc_files<-list.files(dumpdir_nc)
-
 # Start the clock!
 ptm <- proc.time()
 #About 0.1 seconds per file, ~15 minutes for the year####
@@ -323,14 +332,14 @@ ptm <- proc.time()
 #Loop through each of the nc files####
 #*This loop will crash if any of the nc files have not downloaded correctly####
 #**In that case, find the files that have not downloaded correctly by going to the folder and seeing which are <90KB, then go up to setting up the out.ts with specific dates (~Line 82) and rerun the download loop for those files
-for (i in 1:length(nc_files)) {
+for (i in 1:length(nc_files_updated)) {
   #*Print out the nc file name####
-  print(nc_files[i])
+  print(nc_files_updated[i])
   #*Loop through the variables####
   for (v in 1:length(vars_nc)) {
     nldasvar <- vars_nc[v]
-    br = nc_open(paste0(dumpdir_nc, nc_files[i]))
-    output[[v]][i,1] =  as.POSIXct(paste0(substr(nc_files[i], 1, 4),'-', substr(nc_files[i], 5,6), '-', substr(nc_files[i], 7,8), ' ', substr(nc_files[i], 9,10), ':', substr(nc_files[i], 11,12)), tz=loc_tz)
+    br = nc_open(paste0(dumpdir_nc, nc_files_updated[i]))
+    output[[v]][i,1] =  as.POSIXct(paste0(substr(nc_files_updated[i], 1, 4),'-', substr(nc_files_updated[i], 5,6), '-', substr(nc_files_updated[i], 7,8), ' ', substr(nc_files_updated[i], 9,10), ':', substr(nc_files_updated[i], 11,12)), tz=loc_tz)
     output[[v]][i,-1] = ncvar_get(br, nldasvar)
     nc_close(br)
   }
@@ -359,21 +368,6 @@ box = 1 # Chosen cell of 'cellNum' from combineNLDAS.R, you'll have to look at t
 
 # # make a list of the files previously collated
 files = list.files(dumpdir_csv, pattern = '.csv')
-# 
-# #Find the date from the first and last nc file####
-# nc_file_startdatetime<-nc_files[1]
-# 
-# year_final<-substr(nc_files[length(nc_files)],1,4)
-# month_final<-substr(nc_files[length(nc_files)],5,6)
-# day_final<-substr(nc_files[length(nc_files)],7,8)
-# hour_final<-substr(nc_files[length(nc_files)],9,10)
-# nc_file_enddatetime<-paste0(year,'-',month0,'-',day0,' ',hour0,':00:00')
-# 
-# 
-# #make a null dataframme with the sequence of datetimes from above
-# final.box = data.frame(dateTime = seq.POSIXt(
-#   as.POSIXct(output[[1]]$dateTime[1], tz= loc_tz),
-#   as.POSIXct(output[[1]]$dateTime[length(output[[1]]$dateTime)],tz=loc_tz),by = 'hour'))
 
 #index each box csv to break out each of the cells
 for (i in 1:length(files)){
@@ -414,8 +408,8 @@ for (i in 1:length(files)){
   out %>% 
     mutate(dateTime = as.character(dateTime)) %>% 
     write_csv(.,paste0(dumpdir_compiled,
-                       format(as.POSIXct(startdatetime), '%Y-%m-%d'),
-                       '_', format(as.POSIXct(enddatetime), '%Y-%m-%d'),
+                       format(as.POSIXct(startdatetime_updated), '%Y-%m-%d'),
+                       '_', format(as.POSIXct(enddatetime_updated), '%Y-%m-%d'),
                        '_', vars_nc[i],'.csv'))
   #If it is the first file, then use that as the output, if not, then merge with previous####
   if(i==1){final.box<-out}else{
