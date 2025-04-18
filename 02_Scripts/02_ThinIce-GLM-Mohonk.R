@@ -46,7 +46,7 @@ plot_temp(nc_file)
 #get_var gets the variables####
 sim_vars(nc_file)
 #Plot a variable, e.g., height of ice
-plot_var(nc_file, "vol_white_ice")
+plot_var(nc_file, "precipitation")
 #Extract a relevant variables values to store as a df####
 get_var(file=nc_file,var_name="blue_ice_thickness")
 

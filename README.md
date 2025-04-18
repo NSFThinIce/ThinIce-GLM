@@ -38,6 +38,12 @@ ELA239 (Contact: Scott Higgins) <br>
 
  
 ## Fun links that might be informative or helpful:
+Some papers for reading: 
+GLM 3.0 paper: https://gmd.copernicus.org/articles/12/473/2019/<br>
+Lake Sunapee application using GLM: https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2020WR027296 <br>
+
+Project EDDIE module for modeling lakes with GLM. Great place to get a start: https://serc.carleton.edu/eddie/teaching_materials/modules/lake_modeling.html<br>
+
 Best place to find the description of the GLM nml configuration file and everything that it does:
 https://aquatic.science.uwa.edu.au/research/models/GLM/configuration.html
 <br>
