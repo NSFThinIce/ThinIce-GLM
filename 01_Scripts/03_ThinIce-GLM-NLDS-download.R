@@ -30,7 +30,7 @@ library(stringr)
 library(tidyverse)
 
 #Run the functions code####
-source("02_Scripts/00_ThinIce-GLM-Functions.R")
+source("01_Scripts/00_ThinIce-GLM-Functions.R")
 
 ###########################################################
 ### Enter in some lake and year relevant information####

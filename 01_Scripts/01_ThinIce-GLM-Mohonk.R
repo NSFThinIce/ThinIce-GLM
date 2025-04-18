@@ -12,7 +12,7 @@ library(tidyverse)
 library(GLM3r) #load the library
 
 #Run functions
-source("02_Scripts/00_ThinIce-GLM-Functions.R")
+source("01_Scripts/00_ThinIce-GLM-Functions.R")
 
 #If you want to run the simulations, set `do_run = TRUE`
 do_run <- TRUE
@@ -21,11 +21,11 @@ do_run <- TRUE
 
 # # Best practice to give the full path to the executable e.g. 
 # # "C:/Users/data/Git/ThinIce-GLM/04_glm_3.3.1a0/glm.exe"
-glm_exec <- file.path(getwd(), "04_glm_3.3.1a0/glm.exe")
+glm_exec <- file.path(getwd(), "03_glm_3.3.1a0/glm.exe")
 glm_exec
 
 #Try to run sparkling example data through GLM3r
-nml_file<-paste0("05_Sparkling/glm3.nml")
+nml_file<-paste0("06_Mohonk/glm3.nml")
 read_nml(nml_file)
 
 #Ok - nml file reads ok####
@@ -34,7 +34,7 @@ read_nml(nml_file)
 #Check the version - this is 3.3.0a9 as of 30Mar2025
 GLM3r::glm_version()
 #Run through CCC's server
-GLM3r::run_glm("05_Sparkling",nml_file='glm3.nml',verbose=T)
+GLM3r::run_glm("06_Mohonk",nml_file='glm3.nml',verbose=T)
 
 # or with new function
 run_sim(lake = "06_Mohonk", do_run = TRUE, glm_exec = glm_exec)
