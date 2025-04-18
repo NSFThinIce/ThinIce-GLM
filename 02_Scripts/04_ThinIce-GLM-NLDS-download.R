@@ -7,8 +7,6 @@
 ### https://github.com/CareyLabVT/Sunapee-GLM/tree/master/NLDASData
 ###########################################################
 
-# v 04Mar2021: BGS updated to remove hardcoding: only first 43 lines need to be edited
-
 ##############Add in install.package statements here########### 
 if(!require('RCurl')){install.packages(RCurl)} #Accessing files through URLS
 if(!require('lubridate')){install.packages(lubridate)}
@@ -251,12 +249,11 @@ for (i in 1:length(out.ts)) {
   
 }
 
-#If there are time out errors (it seems like it might be a campus issue with a firewall), here is a possible way to fix it:
-#https://stackoverflow.com/questions/35282928/how-do-i-set-a-timeout-for-utilsdownload-file-in-r
-
 # Stop the clock
 proc.time() - ptm
 
+#If at this point, the year download didn't finish, then check the download folder. Delete any files that downloaded incompletely (they should be <90kb)####
+#When you rerun this code from the beginning, it will start back up where you left off####
 
 
 #### step 2: save each variable as a new csv ####
