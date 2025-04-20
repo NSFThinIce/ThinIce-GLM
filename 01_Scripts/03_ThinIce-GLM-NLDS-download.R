@@ -246,7 +246,7 @@ for (i in 1:length(out.ts)) {
                                 path = paste(dumpdir_nc, filename, '_', loc_tz, '.nc',sep=''), 
                                 handle = h)
   
-  Sys.sleep(2)
+  #Sys.sleep(2)
   
 }
 
