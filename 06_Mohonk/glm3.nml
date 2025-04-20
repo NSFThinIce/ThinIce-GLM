@@ -34,8 +34,8 @@
 /
 &time
    timefmt = 2 !DCR: Choose 2 (start/stop) or 3 (num_days)
-   start = '2017-01-02 00:00:00'
-   stop = '2017-12-30 00:00:00'
+   start = '2021-01-01 00:00:00'
+   stop = '2021-12-31 23:00:00'
    dt = 3600 !DCR: this is the time step in seconds, the output is generated at nsave (from &output block)*dt. So 3600 seconds = 1 hour, daily time steps are output; dt=150 seconds will get hourly output 
    timezone = -5 !This is the time zone relative to GMT, eastern = -5, central = -6, mountain = -7, pacific = -8
    num_days=360  !DCR: this is the number of days for the simulation, units = days 
@@ -107,7 +107,7 @@
    cloud_mode = 4
    fetch_mode = 0
    subdaily = .false.
-   meteo_fl = 'input/Mohonk_2016_12_31_to_2017_12_31_hourly.csv'
+   meteo_fl = 'input/Mohonk_2020_12_31_to_2021_12_31_hourly.csv'
    wind_factor = 1
    sw_factor = 1.08
    lw_factor = 1

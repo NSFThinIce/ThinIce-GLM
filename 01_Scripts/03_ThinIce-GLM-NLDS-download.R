@@ -37,7 +37,7 @@ source("01_Scripts/00_ThinIce-GLM-Functions.R")
 ###########################################################
 lakeNumber<-"06" #number of the folder####
 lakeName<-"Mohonk" #Lake name here####
-year<-2021 #set the year here####
+year<-2022 #set the year here####
 local_tz_set = 'EST' #enter the timezone you would like to have the final data in. see OlsonNames() for options####
 loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad when you go to collate and it's a mess.####
 
@@ -101,7 +101,7 @@ out.ts = seq.POSIXt(as.POSIXct(startdatetime, tz = loc_tz),as.POSIXct(enddatetim
 
   #In case any need rerunning, can create a specific list here. SOmetimes, it appears that the download doesn;t work. You can tell this if the nc file size is 2KB instead of 90KB 
   #out.ts<-c(as.POSIXct("2019-01-11 07:00:00", tz = loc_tz),as.POSIXct("2019-01-12 01:00:00", tz = loc_tz),as.POSIXct("2019-06-24 03:00:00", tz = loc_tz),as.POSIXct("2019-11-19 21:00:00", tz = loc_tz))
-  #out.ts<-c(as.POSIXct("2021-02-18 21:00:00", tz = loc_tz))
+  #out.ts<-c(as.POSIXct("2021-05-29 01:00:00", tz = loc_tz),as.POSIXct("2021-10-15 02:00:00", tz = loc_tz))
 
 # Create output list of tables
 output = list()
@@ -493,7 +493,10 @@ month_final<-substr(drivers$time[length(drivers$time)],6,7)
 day_final<-substr(drivers$time[length(drivers$time)],9,10)
 
 #save combined nldas file####
-write_csv(drivers,paste0(dumpdir_input,lakeName, '_', 
+#make sure the time is exported as a character to maintain time zone####
+#The file name will include the first day to the last####
+write_csv(drivers%>%mutate(time=as.character(time)),
+                   paste0(dumpdir_input,lakeName, '_', 
                    paste(year_start,month_start,day_start,sep="_"),
                    '_to_', 
                    paste(year_final,month_final,day_final,sep="_"),
