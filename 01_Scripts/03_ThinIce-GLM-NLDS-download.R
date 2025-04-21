@@ -1,10 +1,29 @@
 ###########################################################
 ### Downloading NLDAS2 data for meteorological hourly forcing
 ### http://ldas.gsfc.nasa.gov/nldas/NLDAS2forcing.php
-### Author: Hilary Dugan hilarydugan@gmail.com
+### Original author: Hilary Dugan hilarydugan@gmail.com
 ### Date: 2019-09-30
+### Modified from the Carey lab script from Hilary:
 ### https://github.com/CareyLabVT/Sunapee-GLM/blob/master/NLDASData/getNLDAS_simple.R
 ### https://github.com/CareyLabVT/Sunapee-GLM/tree/master/NLDASData
+### Current code editor: Dave Richardson: richardsond@newpaltz.edu
+### Date: 21Apr2025
+### Edited for the modeled lakes, NSF Thin Ice Project
+###
+### Steps of operation
+### 1. Enter relevant data in "Step 1. LAKE DATA"
+### 2. Run code through "END Step 2. DOWNLOAD NC DATA"
+###    2a. If you stop downloading partway through, just pick up back here the next time you start up. 
+### 3. Check the folder with nc files (ThinIce-GLM\LAKE\input\NLDAS\YEAR) on your computer. Sort the nc files by size and see if there are any small files with incomplete downloads
+###    3a. Go back to 'Step 3. RERUN MISSING NC FILES' and enter those specific Date/Times into the commented out data frame
+###    3b. Rerun the Step 2 loop
+###    3c. Recheck the nc file folder to make sure all the files are the same size (~90 KB on a Windows OS)
+### 4. Run 'Step 4. EXTRACT DATA FROM NC' to get all the variables out of the NC files and put them together
+### 5. Run code in 'Step 5. QA/QC CHECKS'
+###    5a. This code checks to make sure there aren't any missing or repeated rows
+###    5b. Rerun some specific date/times using step 3 if so
+### 6. Run 'Step 6. PREPARE FOR GLM FORMAT AND EXPORT' to get the date/time local and the variables are formatted correctly
+###    6a. Make sure the file exported correctly
 ###########################################################
 
 ##############Add in install.package statements here########### 
@@ -33,14 +52,16 @@ library(tidyverse)
 source("01_Scripts/00_ThinIce-GLM-Functions.R")
 
 ###########################################################
-### Enter in some lake and year relevant information####
+### Step 1. LAKE DATA ####
 ###########################################################
 lakeNumber<-"06" #number of the folder####
 lakeName<-"Mohonk" #Lake name here####
 year<-2024 #set the year here####
 local_tz_set = 'EST' #enter the timezone you would like to have the final data in. see OlsonNames() for options####
 loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad when you go to collate and it's a mess.####
-
+extent = as.numeric(c(-74.06,41.75,-74.05,41.76)) #Enter in the decimal degree bounding box of your lake rounded to two decimals####
+#if the extent is loaded from the shapefile (above), make sure they are in decimal degrees, otherwise this code will not work
+##########################################################
 
 ###########################################################
 ### Point to dump directory where data will be saved
@@ -67,13 +88,6 @@ password = 'Cyanotoxin1234!!'
 #in addition, make sure you have authorized your account access to the GEODISC archives:
 # https://disc.gsfc.nasa.gov/earthdata-login
 
-###########################################################
-### Use shapefile of lake to set bounding box
-###########################################################
-# read in lake file (as a .shp file) to get bounding box
-# lakeShape = st_read('shapefile.shp') 
-extent = as.numeric(c(-74.06,41.75,-74.05,41.76)) 
-#if the extent is loaded from the shapefile (above), make sure they are in decimal degrees, otherwise this code will not work
 
 ###########################################################
 ### Set timeframe
@@ -98,7 +112,10 @@ enddatetime = paste0(year,'-12-31 23:00:00') #set the end date at the end of the
 
 # sequence the datetime over your desired time period
 out.ts = seq.POSIXt(as.POSIXct(startdatetime, tz = loc_tz),as.POSIXct(enddatetime,tz=loc_tz), by = 'hour')
-
+  
+  ##############################
+  ### Step 3. RERUN MISSING NC FILES####
+  ##############################
   #In case any need rerunning, can create a specific list here. SOmetimes, it appears that the download doesn;t work. You can tell this if the nc file size is 2KB instead of 90KB 
   #out.ts<-c(as.POSIXct("2019-01-11 07:00:00", tz = loc_tz),as.POSIXct("2019-01-12 01:00:00", tz = loc_tz),as.POSIXct("2019-06-24 03:00:00", tz = loc_tz),as.POSIXct("2019-11-19 21:00:00", tz = loc_tz))
   #out.ts<-c(as.POSIXct("2024-10-20 07:00:00", tz = loc_tz),as.POSIXct("2024-11-15 23:00:00", tz = loc_tz))
@@ -107,6 +124,7 @@ out.ts = seq.POSIXt(as.POSIXct(startdatetime, tz = loc_tz),as.POSIXct(enddatetim
 output = list()
 
 ###########################################################
+### Step 2. DOWNLOAD NC DATA#### 
 ### Run hourly loop
 ###########################################################
 # Start the clock!
@@ -253,12 +271,17 @@ for (i in 1:length(out.ts)) {
 # Stop the clock
 proc.time() - ptm
 
+###########################################################
+### End Step. 2 DOWNLOAD NC DATA####
+###########################################################
+
 #If at this point, the year download didn't finish, then check the download folder. Delete any files that downloaded incompletely (they should be <90kb)####
 #When you rerun this code from the beginning, it will start back up where you left off####
 
 
-#### step 2: save each variable as a new csv ####
-
+###########################################################
+### Step 4. EXTRACT DATA FROM NC ####
+###########################################################
 #Requery the nc_files as it might have updated
 #Get the list of files####
 nc_files_updated<-list.files(dumpdir_nc)
@@ -417,6 +440,9 @@ for (i in 1:length(files)){
 
 }
 
+###########################################################
+### Step 5. QA/QC CHECKS ####
+###########################################################
 ####### Create a Single Dataframe and adjust time zone###########
 head(final.box)
 tail(final.box)
@@ -431,6 +457,10 @@ final.box[which(is.na(final.box$Tair)),] #If there are any, then check here. Rer
 final.box <- final.box %>% 
   mutate(local_dateTime = with_tz(dateTime, tzone = local_tz_set))
 head(final.box)
+
+###########################################################
+### Step 6. PREPARE FOR GLM FORMAT AND EXPORT ####
+###########################################################
 
 #Ranme and calculate some import drivers for GLM-AED####
 drivers <- final.box %>% 
