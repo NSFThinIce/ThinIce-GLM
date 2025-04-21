@@ -65,6 +65,7 @@ extent = as.numeric(c(-74.06,41.75,-74.05,41.76)) #Enter in the decimal degree b
 
 ###########################################################
 ### Point to dump directory where data will be saved
+### This is set automatically based on your lake data above
 ###########################################################
 dumpdir_nc = paste0(lakeNumber,"_",lakeName,"/input/NLDAS/",year,"/") #where to dump nc files
 dumpdir_csv = paste0(lakeNumber,"_",lakeName,"/input/NLDAS_csv/",year,"/") #where to dump csv files
@@ -111,12 +112,14 @@ enddatetime = paste0(year,'-12-31 23:00:00') #set the end date at the end of the
 
 
 # sequence the datetime over your desired time period
+# this creates a sequence of datetimes from the first day of the year (or the first time period) to the end of the year
 out.ts = seq.POSIXt(as.POSIXct(startdatetime, tz = loc_tz),as.POSIXct(enddatetime,tz=loc_tz), by = 'hour')
   
   ##############################
   ### Step 3. RERUN MISSING NC FILES####
   ##############################
   #In case any need rerunning, can create a specific list here. SOmetimes, it appears that the download doesn;t work. You can tell this if the nc file size is 2KB instead of 90KB 
+  #Do not uncomment these - but just run the code after the #
   #out.ts<-c(as.POSIXct("2019-01-11 07:00:00", tz = loc_tz),as.POSIXct("2019-01-12 01:00:00", tz = loc_tz),as.POSIXct("2019-06-24 03:00:00", tz = loc_tz),as.POSIXct("2019-11-19 21:00:00", tz = loc_tz))
   #out.ts<-c(as.POSIXct("2024-10-20 07:00:00", tz = loc_tz),as.POSIXct("2024-11-15 23:00:00", tz = loc_tz))
 
@@ -130,7 +133,7 @@ output = list()
 # Start the clock!
 ptm <- proc.time()
 
-#Set teh timeout limit - might help if you are gettinng connection timed out after 10006 milliseconds error message
+#Set the timeout limit - might help if you are gettinng connection timed out after 10006 milliseconds error message
 #getOption('timeout')
 #options(timeout=20006)
 
