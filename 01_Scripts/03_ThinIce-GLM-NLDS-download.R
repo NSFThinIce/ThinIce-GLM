@@ -37,7 +37,7 @@ source("01_Scripts/00_ThinIce-GLM-Functions.R")
 ###########################################################
 lakeNumber<-"06" #number of the folder####
 lakeName<-"Mohonk" #Lake name here####
-year<-2023 #set the year here####
+year<-2024 #set the year here####
 local_tz_set = 'EST' #enter the timezone you would like to have the final data in. see OlsonNames() for options####
 loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad when you go to collate and it's a mess.####
 
@@ -101,7 +101,7 @@ out.ts = seq.POSIXt(as.POSIXct(startdatetime, tz = loc_tz),as.POSIXct(enddatetim
 
   #In case any need rerunning, can create a specific list here. SOmetimes, it appears that the download doesn;t work. You can tell this if the nc file size is 2KB instead of 90KB 
   #out.ts<-c(as.POSIXct("2019-01-11 07:00:00", tz = loc_tz),as.POSIXct("2019-01-12 01:00:00", tz = loc_tz),as.POSIXct("2019-06-24 03:00:00", tz = loc_tz),as.POSIXct("2019-11-19 21:00:00", tz = loc_tz))
-  #out.ts<-c(as.POSIXct("2023-03-26 11:00:00", tz = loc_tz))
+  #out.ts<-c(as.POSIXct("2024-10-20 07:00:00", tz = loc_tz),as.POSIXct("2024-11-15 23:00:00", tz = loc_tz))
 
 # Create output list of tables
 output = list()
