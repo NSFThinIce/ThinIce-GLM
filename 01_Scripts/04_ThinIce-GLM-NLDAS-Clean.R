@@ -25,7 +25,8 @@ source("01_Scripts/00_ThinIce-GLM-Functions.R")
 ###########################################################
 lakeNumber<-"06" #number of the folder####
 lakeName<-"Mohonk" #Lake name here####
-years<-2018:2024 #set the year range here, can be consectutive 2017:2024 or non-consecutive c(2017,2020,2021) ####
+years<-2018 #set the year range here, DCR recommends doing 1 year at a time because git can cause R studio to hang up
+            #can also be consectutive 2017:2024 or non-consecutive c(2017,2020,2021) ####
 ##########################################################
 
 ###########################################################
@@ -40,17 +41,18 @@ for(year.index in 1:length(years)){
   
   #Get the list of files####
   nc_files<-list.files(dumpdir_nc)
-  
+  #Loop through each file in the year folder####
   for(nc.file.index in 1:length(nc_files)){
+    #Get each file name####
     nc_file_name<-paste0(dumpdir_nc,nc_files[nc.file.index])
-    #Check the files existence
+    #Check the files existence####
     if (file.exists(nc_file_name)) {
-      #Delete file if it exists
+      #Delete file if it exists####
       file.remove(nc_file_name)
     }  
-  } #End of loop through files
+  } #End of loop through files####
   
-} #end of loop through years
+} #end of loop through years####
 
 
 
