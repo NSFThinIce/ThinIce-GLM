@@ -57,10 +57,10 @@ source("01_Scripts/00_ThinIce-GLM-Functions.R")
 ###########################################################
 lakeNumber<-"07" #number of the folder####
 lakeName<-"GL4" #Lake name here####
-year<-2024 #set the year here####
+year<-2024 #set the year here, GL4: 2018-2024; 2018-2020: KG: B, 2020-2021 IAO: C; 2022-2024 DCR: A#### 
 local_tz_set = "US/Mountain" #enter the timezone you would like to have the final data in. see OlsonNames() for options, e.g., "EST", "US/Mountain", "US/Central" ####
 loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad when you go to collate and it's a mess.####
-extent = as.numeric(c(-74.06,41.75,-74.05,41.76)) #Enter in the decimal degree bounding box of your lake rounded to two decimals####
+extent = as.numeric(c(-105.62,40.05,-105.61,40.07)) #Enter in the decimal degree bounding box of your lake rounded to two decimals####
 #if the extent is loaded from the shapefile (above), make sure they are in decimal degrees, otherwise this code will not work
 ##########################################################
 
@@ -72,6 +72,12 @@ dumpdir_nc = paste0(lakeNumber,"_",lakeName,"/input/NLDAS/",year,"/") #where to 
 dumpdir_csv = paste0(lakeNumber,"_",lakeName,"/input/NLDAS_csv/",year,"/") #where to dump csv files
 dumpdir_compiled = paste0(lakeNumber,"_",lakeName,"/input/NLDAS_compiled/",year,"/") #where to dump the compiled NLDAS data
 dumpdir_input = paste0(lakeNumber,"_",lakeName,"/input/") #where to dump the GLM met data 
+
+#Need to make sure that folders exist for the NLDAS outputs####
+#If they do not exist, then this will create the folder####
+if(!file.exists(paste0(lakeNumber,"_",lakeName,"/input/NLDAS/"))){dir.create(file.path(paste0(lakeNumber,"_",lakeName,"/input/NLDAS/")))}
+if(!file.exists(paste0(lakeNumber,"_",lakeName,"/input/NLDAS_csv/"))){dir.create(file.path(paste0(lakeNumber,"_",lakeName,"/input/NLDAS_csv/")))}
+if(!file.exists(paste0(lakeNumber,"_",lakeName,"/input/NLDAS_compiled/"))){dir.create(file.path(paste0(lakeNumber,"_",lakeName,"/input/NLDAS_compiled/")))}
 
 #Need to make sure that folders exist for that year####
 #If they do not exist, then this will create the folder####
@@ -122,7 +128,7 @@ out.ts = seq.POSIXt(as.POSIXct(startdatetime, tz = loc_tz),as.POSIXct(enddatetim
   #In case any need rerunning, can create a specific list here. SOmetimes, it appears that the download doesn;t work. You can tell this if the nc file size is 2KB instead of 90KB 
   #Do not uncomment these - but just run the code after the #
   #out.ts<-c(as.POSIXct("2019-01-11 07:00:00", tz = loc_tz),as.POSIXct("2019-01-12 01:00:00", tz = loc_tz),as.POSIXct("2019-06-24 03:00:00", tz = loc_tz),as.POSIXct("2019-11-19 21:00:00", tz = loc_tz))
-  #out.ts<-c(as.POSIXct("2024-10-20 07:00:00", tz = loc_tz),as.POSIXct("2024-11-15 23:00:00", tz = loc_tz))
+  #out.ts<-c(as.POSIXct("2024-01-03 06:00:00", tz = loc_tz))
 
 # Create output list of tables
 output = list()
