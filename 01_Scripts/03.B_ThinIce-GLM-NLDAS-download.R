@@ -58,9 +58,9 @@ source("01_Scripts/00_ThinIce-GLM-Functions.R")
 lakeNumber<-"06" #number of the folder####
 lakeName<-"Mohonk" #Lake name here####
 year<-2024 #set the year here####
-local_tz_set = 'EST' #enter the timezone you would like to have the final data in. see OlsonNames() for options####
+local_tz_set = "US/Mountain" #enter the timezone you would like to have the final data in. see OlsonNames() for options####
 loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad when you go to collate and it's a mess.####
-extent = as.numeric(c(-74.06,41.75,-74.05,41.76)) #Enter in the decimal degree bounding box of your lake rounded to two decimals####
+extent = as.numeric(c(-105.62,40.05,-105.61,40.07)) #Enter in the decimal degree bounding box of your lake rounded to two decimals####
 #if the extent is loaded from the shapefile (above), make sure they are in decimal degrees, otherwise this code will not work
 ##########################################################
 
