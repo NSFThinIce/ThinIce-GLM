@@ -55,8 +55,8 @@ source("01_Scripts/00_ThinIce-GLM-Functions.R")
 ###########################################################
 ### Step 1. LAKE DATA ####
 ###########################################################
-lakeNumber<-"06" #number of the folder####
-lakeName<-"Mohonk" #Lake name here####
+lakeNumber<-"07" #number of the folder####
+lakeName<-"GL4" #Lake name here####
 year<-2024 #set the year here####
 local_tz_set = "US/Mountain" #enter the timezone you would like to have the final data in. see OlsonNames() for options####
 loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad when you go to collate and it's a mess.####
@@ -72,6 +72,12 @@ dumpdir_nc = paste0(lakeNumber,"_",lakeName,"/input/NLDAS/",year,"/") #where to 
 dumpdir_csv = paste0(lakeNumber,"_",lakeName,"/input/NLDAS_csv/",year,"/") #where to dump csv files
 dumpdir_compiled = paste0(lakeNumber,"_",lakeName,"/input/NLDAS_compiled/",year,"/") #where to dump the compiled NLDAS data
 dumpdir_input = paste0(lakeNumber,"_",lakeName,"/input/") #where to dump the GLM met data 
+
+#Need to make sure that folders exist for the NLDAS outputs####
+#If they do not exist, then this will create the folder####
+if(!file.exists(paste0(lakeNumber,"_",lakeName,"/input/NLDAS/"))){dir.create(file.path(paste0(lakeNumber,"_",lakeName,"/input/NLDAS/")))}
+if(!file.exists(paste0(lakeNumber,"_",lakeName,"/input/NLDAS_csv/"))){dir.create(file.path(paste0(lakeNumber,"_",lakeName,"/input/NLDAS_csv/")))}
+if(!file.exists(paste0(lakeNumber,"_",lakeName,"/input/NLDAS_compiled/"))){dir.create(file.path(paste0(lakeNumber,"_",lakeName,"/input/NLDAS_compiled/")))}
 
 #Need to make sure that folders exist for that year####
 #If they do not exist, then this will create the folder####

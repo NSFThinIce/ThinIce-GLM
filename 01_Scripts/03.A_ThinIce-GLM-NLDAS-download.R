@@ -86,6 +86,8 @@ if(!file.exists(dumpdir_csv)){dir.create(file.path(dumpdir_csv))}
 if(!file.exists(dumpdir_compiled)){dir.create(file.path(dumpdir_compiled))}
 
 
+
+
 ###########################################################
 ### Enter password information
 ###########################################################
@@ -128,7 +130,7 @@ out.ts = seq.POSIXt(as.POSIXct(startdatetime, tz = loc_tz),as.POSIXct(enddatetim
   #In case any need rerunning, can create a specific list here. SOmetimes, it appears that the download doesn;t work. You can tell this if the nc file size is 2KB instead of 90KB 
   #Do not uncomment these - but just run the code after the #
   #out.ts<-c(as.POSIXct("2019-01-11 07:00:00", tz = loc_tz),as.POSIXct("2019-01-12 01:00:00", tz = loc_tz),as.POSIXct("2019-06-24 03:00:00", tz = loc_tz),as.POSIXct("2019-11-19 21:00:00", tz = loc_tz))
-  #out.ts<-c(as.POSIXct("2024-01-03 06:00:00", tz = loc_tz))
+  #out.ts<-c(as.POSIXct("2020-01-01 00:00:00", tz = loc_tz))
 
 # Create output list of tables
 output = list()
