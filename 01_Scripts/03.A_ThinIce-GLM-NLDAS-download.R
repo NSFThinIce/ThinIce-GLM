@@ -57,7 +57,7 @@ source("01_Scripts/00_ThinIce-GLM-Functions.R")
 ###########################################################
 lakeNumber<-"08" #number of the folder####
 lakeName<-"Bethel" #Lake name here####
-year<-2023 #set the year here, GL4: 2018-2024; 2018-2020: KG: B, 2020-2021 IAO: C; 2022-2024 DCR: A#### 
+year<-2022 #set the year here, GL4: 2018-2024; 2018-2020: KG: B, 2020-2021 IAO: C; 2022-2024 DCR: A#### 
 local_tz_set = "US/Central" #enter the timezone you would like to have the final data in. see OlsonNames() for options, e.g., "EST", "US/Mountain", "US/Central" ####
 loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad when you go to collate and it's a mess.####
 extent = as.numeric(c(-92.34,38.90,-92.33,38,91)) #Enter in the decimal degree bounding box of your lake rounded to two decimals####
@@ -130,7 +130,7 @@ out.ts = seq.POSIXt(as.POSIXct(startdatetime, tz = loc_tz),as.POSIXct(enddatetim
   #In case any need rerunning, can create a specific list here. SOmetimes, it appears that the download doesn;t work. You can tell this if the nc file size is 2KB instead of 90KB 
   #Do not uncomment these - but just run the code after the #
   #out.ts<-c(as.POSIXct("2023-02-06 17:00:00", tz = loc_tz),as.POSIXct("2023-06-02 04:00:00", tz = loc_tz),as.POSIXct("2023-09-30 11:00:00", tz = loc_tz),as.POSIXct("2023-12-29 15:00:00", tz = loc_tz))
-  #out.ts<-c(as.POSIXct("2022-09-20 06:00:00", tz = loc_tz),as.POSIXct("2022-10-02 02:00:00", tz = loc_tz),as.POSIXct("2022-10-17 17:00:00", tz = loc_tz))
+  #out.ts<-c(as.POSIXct("2022-09-13 07:00:00", tz = loc_tz),as.POSIXct("2022-12-31 13:00:00", tz = loc_tz))
 
 # Create output list of tables
 output = list()
@@ -458,6 +458,7 @@ for (i in 1:length(files)){
 ####### Create a Single Dataframe and adjust time zone###########
 head(final.box)
 tail(final.box)
+nrow(final.box) #should be 24*365=8760 (or 24*366=8784 in a leap year)
 which(duplicated(final.box)) #check for duplicate time stamps - if this list is long, something is wrong!! There should be ZERO duplicated timestamps.
 # final.box <- distinct(final.box)
 sum(is.na(final.box$Tair)) #checks for NA values in the boxes

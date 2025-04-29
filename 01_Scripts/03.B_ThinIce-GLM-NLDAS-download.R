@@ -365,7 +365,7 @@ for (i in 1:length(nc_files_updated)) {
     nldasvar <- vars_nc[v]
     br = nc_open(paste0(dumpdir_nc, nc_files_updated[i]))
     output[[v]][i,1] =  as.POSIXct(paste0(substr(nc_files_updated[i], 1, 4),'-', substr(nc_files_updated[i], 5,6), '-', substr(nc_files_updated[i], 7,8), ' ', substr(nc_files_updated[i], 9,10), ':', substr(nc_files_updated[i], 11,12)), tz=loc_tz)
-    output[[v]][i,-1] = ncvar_get(br, nldasvar)
+    output[[v]][i,-1] = ncvar_get(br, nldasvar)[cellNum]
     nc_close(br)
   }
   rm(br)
@@ -450,6 +450,7 @@ for (i in 1:length(files)){
 ####### Create a Single Dataframe and adjust time zone###########
 head(final.box)
 tail(final.box)
+nrow(final.box) #should be 24*365=8760 (or 24*366=8784 in a leap year)
 which(duplicated(final.box)) #check for duplicate time stamps - if this list is long, something is wrong!! There should be ZERO duplicated timestamps.
 # final.box <- distinct(final.box)
 sum(is.na(final.box$Tair)) #checks for NA values in the boxes
