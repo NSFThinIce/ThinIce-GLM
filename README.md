@@ -6,7 +6,7 @@ Mohonk (contact: Dave Richardson) <br>
 Green Lake 4 (Contact: Bella Oleksy) <br>
 The Loch (Contact: Bella Oleksy) <br>
 Bethel (Contact: Rebecca North) <br>
-Marceline (COntact: Rebecca North) <br>
+Marceline (Contact: Rebecca North) <br>
 Shelburne (Contact: Mindy Morales-Williams) <br>
 ELA239 (Contact: Scott Higgins) <br>
 
