@@ -90,8 +90,8 @@ if(!file.exists(dumpdir_compiled)){dir.create(file.path(dumpdir_compiled))}
 ### Enter password information
 ###########################################################
 #https://urs.earthdata.nasa.gov/profile <-- GET A EARTHDATA LOGIN
-username = 'thiniceproject'
-password = 'Cyanotoxin1234!!'
+# username = 'thiniceproject'
+# password = 'Cyanotoxin1234!!'
 
 
 #in addition, make sure you have authorized your account access to the GEODISC archives:
@@ -262,6 +262,7 @@ for (i in 1:length(out.ts)) {
   
   # or this with curl
   h <- curl::new_handle()
+  
   
   #A handle is used to configure a request with custom options, headers and payload. Once the handle has been set up, it can be passed to any of the download functions such as curl()####
   # curl::handle_setopt(
