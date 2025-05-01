@@ -52,12 +52,18 @@ library(tidyverse)
 #Run the functions code####
 source("01_Scripts/00_ThinIce-GLM-Functions.R")
 
+# Download Plan: 
+# GL4: 2018-2024; 
+#     KAG: 2018-2020 using script B, 
+#     IAO: 2020-2021 using script C; 
+#     DCR: 2022-2024 using script A; (aka pocket pancake)
+
 ###########################################################
 ### Step 1. LAKE DATA ####
 ###########################################################
-lakeNumber<-"06" #number of the folder####
-lakeName<-"Mohonk" #Lake name here####
-year<-2024 #set the year here####
+lakeNumber<-"07" #number of the folder####
+lakeName<-"GL4" #Lake name here####
+year<-2018 #set the year here####
 local_tz_set = "US/Mountain" #enter the timezone you would like to have the final data in. see OlsonNames() for options####
 loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad when you go to collate and it's a mess.####
 extent = as.numeric(c(-105.62,40.05,-105.61,40.07)) #Enter in the decimal degree bounding box of your lake rounded to two decimals####
