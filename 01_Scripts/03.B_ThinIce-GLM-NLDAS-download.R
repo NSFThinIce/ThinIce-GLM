@@ -93,6 +93,7 @@ if(!file.exists(dumpdir_compiled)){dir.create(file.path(dumpdir_compiled))}
 username = 'thiniceproject'
 password = 'Cyanotoxin1234!!'
 
+
 #in addition, make sure you have authorized your account access to the GEODISC archives:
 # https://disc.gsfc.nasa.gov/earthdata-login
 
@@ -263,11 +264,11 @@ for (i in 1:length(out.ts)) {
   h <- curl::new_handle()
   
   #A handle is used to configure a request with custom options, headers and payload. Once the handle has been set up, it can be passed to any of the download functions such as curl()####
-  curl::handle_setopt(
-    handle = h,
-    httpauth = 1,
-    userpwd = paste0(username, ':', password)
-  )
+  # curl::handle_setopt(
+    # handle = h,
+    # httpauth = 1,
+    # userpwd = paste0(username, ':', password)
+  # )
   
   # resp <- curl::curl_fetch_memory(lk, handle = h)
   resp <- curl::curl_fetch_disk(url = lk, 
