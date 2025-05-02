@@ -90,8 +90,8 @@ if(!file.exists(dumpdir_compiled)){dir.create(file.path(dumpdir_compiled))}
 ### Enter password information
 ###########################################################
 #https://urs.earthdata.nasa.gov/profile <-- GET A EARTHDATA LOGIN
-username = 'thiniceproject'
-password = 'Cyanotoxin1234!!'
+# username = 'thiniceproject'
+# password = 'Cyanotoxin1234!!'
 
 
 #in addition, make sure you have authorized your account access to the GEODISC archives:
@@ -263,6 +263,7 @@ for (i in 1:length(out.ts)) {
   # or this with curl
   h <- curl::new_handle()
   
+  
   #A handle is used to configure a request with custom options, headers and payload. Once the handle has been set up, it can be passed to any of the download functions such as curl()####
   # curl::handle_setopt(
     # handle = h,
@@ -281,6 +282,43 @@ for (i in 1:length(out.ts)) {
 
 # Stop the clock
 proc.time() - ptm
+
+# Scratch KAG 20250501 Trying to run one at a time ----
+    
+      # Set up the URL where you want to pull data from (in big code we set up multiple )
+      URL_FORA <- paste('https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORA0125_H.2.0%2F',
+                        yearOut, '%2F',
+                        str_pad(as.numeric(yday(as.Date(paste0(yearOut,"-", monthOut,'-' ,dayOut)))), 3, pad = "0"), ## The URL changes for every chunk of 24 hours
+                        '%2FNLDAS_FORA0125_H.A',
+                        yearOut, monthOut, dayOut, '.',
+                        hourOut,  
+                        '.020.nc',
+                        '&SERVICE=L34RS_LDAS',
+                        '&VERSION=1.02',
+                        '&SHORTNAME=NLDAS_FORA0125_H',
+                        '&BBOX=',
+                        round(extent[2], 2),'%2C', # In the new version of the URL, the coordinates are only up to 2 digits
+                        round(extent[1], 2),'%2C',
+                        round(extent[4], 2),'%2C',
+                        round(extent[3], 2),
+                        '&LABEL=NLDAS_FORA0125_H.A',
+                        yearOut, monthOut, dayOut, '.',
+                        hourOut,
+                        '.020.nc.SUB.nc4',
+                        '&FORMAT=bmM0Lw',
+                        #'&VARIABLES=Tair', #Commenting this out gets all the variables
+                        '&DATASET_VERSION=2.0',
+                        sep='') 
+      
+      # Name lk based on the URL that you want to pull from 
+      lk <- URL_FORA #Can also use FORB if not needing long wave radiation
+      
+      h <- curl::new_handle() #A handle is used to configure a request with custom options, headers and payload
+      curl::handle_setopt(h, netrc = 1)  # <-- This line tells curl to use ~/.netrc
+      
+      resp <- curl::curl_fetch_disk(url = lk, 
+                                    path = paste(dumpdir_nc, filename, '_', loc_tz, '.nc',sep=''), 
+                                    handle = h)
 
 ###########################################################
 ### End Step. 2 DOWNLOAD NC DATA####
