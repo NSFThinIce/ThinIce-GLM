@@ -130,7 +130,7 @@ out.ts = seq.POSIXt(as.POSIXct(startdatetime, tz = loc_tz),as.POSIXct(enddatetim
   #In case any need rerunning, can create a specific list here. SOmetimes, it appears that the download doesn;t work. You can tell this if the nc file size is 2KB instead of 90KB 
   #Do not uncomment these - but just run the code after the #
   #out.ts<-c(as.POSIXct("2023-02-06 17:00:00", tz = loc_tz),as.POSIXct("2023-06-02 04:00:00", tz = loc_tz),as.POSIXct("2023-09-30 11:00:00", tz = loc_tz),as.POSIXct("2023-12-29 15:00:00", tz = loc_tz))
-  #out.ts<-c(as.POSIXct("2020-06-08 02:00:00", tz = loc_tz),as.POSIXct("2021-07-14 15:00:00", tz = loc_tz))
+  #out.ts<-c(as.POSIXct("2019-12-30 20:00:00", tz = loc_tz),as.POSIXct("2021-07-14 15:00:00", tz = loc_tz))
 
 # Create output list of tables
 output = list()
