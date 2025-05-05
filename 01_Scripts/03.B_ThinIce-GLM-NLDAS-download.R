@@ -10,7 +10,7 @@
 ### Current code editor: Dave Richardson: richardsond@newpaltz.edu
 ### Date: 21Apr2025
 ### Edited for the modeled lakes, NSF Thin Ice Project
-###
+### 
 ### Steps of operation
 ### 1. Enter relevant data in "Step 1. LAKE DATA"
 ### 2. Run code through "END Step 2. DOWNLOAD NC DATA"
