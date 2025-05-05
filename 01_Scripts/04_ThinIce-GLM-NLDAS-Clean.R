@@ -25,7 +25,7 @@ source("01_Scripts/00_ThinIce-GLM-Functions.R")
 ###########################################################
 lakeNumber<-"08" #number of the folder####
 lakeName<-"Bethel" #Lake name here####
-years<-2020 #set the year range here, DCR recommends doing 1 year at a time because git can cause R studio to hang up
+years<-2019 #set the year range here, DCR recommends doing 1 year at a time because git can cause R studio to hang up
             #can also be consectutive 2017:2024 or non-consecutive c(2017,2020,2021) ####
 ##########################################################
 
