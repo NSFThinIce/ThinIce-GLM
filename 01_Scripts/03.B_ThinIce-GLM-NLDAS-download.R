@@ -90,8 +90,8 @@ if(!file.exists(dumpdir_compiled)){dir.create(file.path(dumpdir_compiled))}
 ### Enter password information
 ###########################################################
 #https://urs.earthdata.nasa.gov/profile <-- GET A EARTHDATA LOGIN
-# username = 'thiniceproject'
-# password = 'Cyanotoxin1234!!'
+username = 'thiniceproject'
+password = 'Cyanotoxin1234!!'
 
 
 #in addition, make sure you have authorized your account access to the GEODISC archives:
@@ -137,6 +137,7 @@ output = list()
 ###########################################################
 ### Step 2. DOWNLOAD NC DATA#### 
 ### Run hourly loop
+### Pocket Pancake's Loop 
 ###########################################################
 # Start the clock!
 ptm <- proc.time()
@@ -265,11 +266,11 @@ for (i in 1:length(out.ts)) {
   
   
   #A handle is used to configure a request with custom options, headers and payload. Once the handle has been set up, it can be passed to any of the download functions such as curl()####
-  # curl::handle_setopt(
-    # handle = h,
-    # httpauth = 1,
-    # userpwd = paste0(username, ':', password)
-  # )
+  curl::handle_setopt(
+     handle = h,
+     httpauth = 1,
+     userpwd = paste0(username, ':', password)
+   )
   
   # resp <- curl::curl_fetch_memory(lk, handle = h)
   resp <- curl::curl_fetch_disk(url = lk, 
