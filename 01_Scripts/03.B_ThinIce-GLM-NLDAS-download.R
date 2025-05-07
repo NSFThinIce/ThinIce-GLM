@@ -357,49 +357,7 @@ output = list()
       
 
 
-#############################################
-# Scratch KAG 20250501 Trying to run one at a time ----
-# This is Katie trying to figure out permissions issues by other authentication and running one at a time 
-#############################################
-    
-      # Set up the URL where you want to pull data from (in big code we set up multiple )
-      URL_FORA <- paste('https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORA0125_H.2.0%2F',
-                        yearOut, '%2F',
-                        str_pad(as.numeric(yday(as.Date(paste0(yearOut,"-", monthOut,'-' ,dayOut)))), 3, pad = "0"), ## The URL changes for every chunk of 24 hours
-                        '%2FNLDAS_FORA0125_H.A',
-                        yearOut, monthOut, dayOut, '.',
-                        hourOut,  
-                        '.020.nc',
-                        '&SERVICE=L34RS_LDAS',
-                        '&VERSION=1.02',
-                        '&SHORTNAME=NLDAS_FORA0125_H',
-                        '&BBOX=',
-                        round(extent[2], 2),'%2C', # In the new version of the URL, the coordinates are only up to 2 digits
-                        round(extent[1], 2),'%2C',
-                        round(extent[4], 2),'%2C',
-                        round(extent[3], 2),
-                        '&LABEL=NLDAS_FORA0125_H.A',
-                        yearOut, monthOut, dayOut, '.',
-                        hourOut,
-                        '.020.nc.SUB.nc4',
-                        '&FORMAT=bmM0Lw',
-                        #'&VARIABLES=Tair', #Commenting this out gets all the variables
-                        '&DATASET_VERSION=2.0',
-                        sep='') 
-      
-      # Name lk based on the URL that you want to pull from 
-      lk <- URL_FORA #Can also use FORB if not needing long wave radiation
-      
-      h <- curl::new_handle() #A handle is used to configure a request with custom options, headers and payload
-      curl::handle_setopt(h, netrc = 1)  # <-- This line tells curl to use ~/.netrc
-      
-      resp <- curl::curl_fetch_disk(url = lk, # here is the url where I want you to get the data 
-                                    path = paste(dumpdir_nc, filename, '_', loc_tz, '.nc',sep=''), #here is the path to where I want you to put the data 
-                                    handle = h) # here is the handle telling you how to configure the data 
 
-      # Checking the downloaded file 
-          downloaded_file <- paste(dumpdir_nc, filename, '_', loc_tz, '.nc', sep='')
-          readLines(downloaded_file, n = 10)
           
   
       
