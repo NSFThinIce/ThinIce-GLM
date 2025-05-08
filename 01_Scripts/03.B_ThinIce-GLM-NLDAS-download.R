@@ -29,7 +29,7 @@
 
 # Download Plan: 
 # GL4: 2018-2024; 
-#     KAG: 2018-2020 using script B, 
+#     KAG: 2018-2019 using script B, 
 #     IAO: 2020-2021 using script C; 
 #     DCR: 2022-2024 using script A; (aka pocket pancake)
 
