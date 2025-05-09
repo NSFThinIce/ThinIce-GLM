@@ -55,12 +55,12 @@ source("01_Scripts/00_ThinIce-GLM-Functions.R")
 ###########################################################
 ### Step 1. LAKE DATA ####
 ###########################################################
-lakeNumber<-"09" #number of the folder####
-lakeName<-"Marceline" #Lake name here####
-year<-2020 #set the year here, GL4: 2018-2024; 2018-2020: KG: B, 2020-2021 IAO: C; 2022-2024 DCR: A#### 
-local_tz_set = "US/Central" #enter the timezone you would like to have the final data in. see OlsonNames() for options, e.g., "EST", "US/Mountain", "US/Central" ####
+lakeNumber<-"10" #number of the folder####
+lakeName<-"TheLoch" #Lake name here####
+year<-2024 #set the year here, GL4: 2018-2024; 2018-2020: KG: B, 2020-2021 IAO: C; 2022-2024 DCR: A#### 
+local_tz_set = "US/Mountain" #enter the timezone you would like to have the final data in. see OlsonNames() for options, e.g., "EST", "US/Mountain", "US/Central" ####
 loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad when you go to collate and it's a mess.####
-extent = as.numeric(c(-93.00,39.66,-92.98,39.68)) #Enter in the decimal degree bounding box of your lake rounded to two decimals####
+extent = as.numeric(c(-105.67,40.29,-105.65,40.30)) #Enter in the decimal degree bounding box of your lake rounded to two decimals####
 #if the extent is loaded from the shapefile (above), make sure they are in decimal degrees, otherwise this code will not work
 ##########################################################
 
@@ -130,7 +130,7 @@ out.ts = seq.POSIXt(as.POSIXct(startdatetime, tz = loc_tz),as.POSIXct(enddatetim
   #In case any need rerunning, can create a specific list here. SOmetimes, it appears that the download doesn;t work. You can tell this if the nc file size is 2KB instead of 90KB 
   #Do not uncomment these - but just run the code after the #
   #out.ts<-c(as.POSIXct("2023-02-06 17:00:00", tz = loc_tz),as.POSIXct("2023-06-02 04:00:00", tz = loc_tz),as.POSIXct("2023-09-30 11:00:00", tz = loc_tz),as.POSIXct("2023-12-29 15:00:00", tz = loc_tz))
-  #out.ts<-c(as.POSIXct("2020-03-30 23:00:00", tz = loc_tz)),as.POSIXct("2021-07-14 15:00:00", tz = loc_tz))
+  #out.ts<-c(as.POSIXct("2024-01-14 17:00:00", tz = loc_tz),as.POSIXct("2021-07-14 15:00:00", tz = loc_tz))
 
 # Create output list of tables
 output = list()
