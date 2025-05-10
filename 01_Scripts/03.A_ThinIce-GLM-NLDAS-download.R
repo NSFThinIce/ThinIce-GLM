@@ -57,7 +57,7 @@ source("01_Scripts/00_ThinIce-GLM-Functions.R")
 ###########################################################
 lakeNumber<-"10" #number of the folder####
 lakeName<-"TheLoch" #Lake name here####
-year<-2024 #set the year here, GL4: 2018-2024; 2018-2020: KG: B, 2020-2021 IAO: C; 2022-2024 DCR: A#### 
+year<-2023 #set the year here, GL4: 2018-2024; 2018-2020: KG: B, 2020-2021 IAO: C; 2022-2024 DCR: A#### 
 local_tz_set = "US/Mountain" #enter the timezone you would like to have the final data in. see OlsonNames() for options, e.g., "EST", "US/Mountain", "US/Central" ####
 loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad when you go to collate and it's a mess.####
 extent = as.numeric(c(-105.67,40.29,-105.65,40.30)) #Enter in the decimal degree bounding box of your lake rounded to two decimals####
