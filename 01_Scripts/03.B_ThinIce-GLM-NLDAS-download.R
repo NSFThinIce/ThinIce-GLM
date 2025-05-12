@@ -27,11 +27,21 @@
 ###    6a. Make sure the file exported correctly
 ###########################################################
 
+# Scripts 
+#   A - DRC (aka pocket pancake)
+#   B - KAG 
+#   C - IAO 
+
 # Download Plan: 
-# GL4: 2018-2024; 
-#     KAG: 2018-2019 using script B, 
-#     IAO: 2020-2021 using script C; 
-#     DCR: 2022-2024 using script A; (aka pocket pancake)
+
+    # LOCH: 2016 - 2024 
+    #     DCR: 2019 - 2024
+    #     KAG: 2016 - 2018 
+    
+    # GL4: 2018-2024 
+    #     KAG: 2018-2019 
+    #     IAO: 2020-2021 
+    #     DCR: 2022-2024 
 
 ##############Add in install.package statements here########### 
 if(!require('RCurl')){install.packages(RCurl)} #Accessing files through URLS
