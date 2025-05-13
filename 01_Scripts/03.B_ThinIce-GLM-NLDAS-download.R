@@ -73,7 +73,7 @@ source("01_Scripts/00_ThinIce-GLM-Functions.R")
 ###########################################################
 lakeNumber<-"10" #number of the folder####
 lakeName<-"TheLoch" #Lake name here####
-year<-2016 #set the year here, GL4: 2018-2024; 2018-2020: KG: B, 2020-2021 IAO: C; 2022-2024 DCR: A#### 
+year<-2017 #set the year here, GL4: 2018-2024; 2018-2020: KG: B, 2020-2021 IAO: C; 2022-2024 DCR: A#### 
 local_tz_set = "US/Mountain" #enter the timezone you would like to have the final data in. see OlsonNames() for options, e.g., "EST", "US/Mountain", "US/Central" ####
 loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad when you go to collate and it's a mess.####
 extent = as.numeric(c(-105.67,40.29,-105.65,40.30)) #Enter in the decimal degree bounding box of your lake rounded to two decimals####
@@ -212,172 +212,6 @@ output = list()
     
       # Stop the clock 
     proc.time() - ptm
-
-
-###########################################################
-### Step 2. DOWNLOAD NC DATA#### 
-### Run hourly loop
-### Pocket Pancake's Loop (AKA Dave's original code)
-###########################################################
-
-      # Start the clock!
-      ptm <- proc.time()
-      
-      #Set the timeout limit - might help if you are gettinng connection timed out after 10006 milliseconds error message
-      #getOption('timeout')
-      #options(timeout=20006)
-      
-      
-      #This takes about 2.7 seconds per download. This is 65 seconds per day, ~32 minutes per month, 6.6 hours per year
-      for (i in 1:length(out.ts)) {
-        print(out.ts[i])
-        yearOut = year(out.ts[i])
-        monthOut = format(out.ts[i], "%m")
-        dayOut = format(out.ts[i], "%d")
-        hourOut = format(out.ts[i], "%H%M")
-        doyOut = format(out.ts[i],'%j')
-        
-        filename = format(out.ts[i], "%Y%m%d%H%M")
-        
-        #Get URL for FORA which has 12 output variables including long wave radiation####
-        #Trying to match up with the URL from FORA gotten from subsetting data here and downloading links list####
-        #https://disc.gsfc.nasa.gov/datasets/NLDAS_FORA0125_H_2.0/summary?keywords=NLDAS
-        #                  https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORA0125_H.2.0%2F
-        #                  2017%2F
-        #                  001
-        #                  %2FNLDAS_FORA0125_H.A
-        #                  20170101.
-        #                  0000
-        #                  .020.nc
-        #                  &SERVICE=L34RS_LDAS
-        #                  &VERSION=1.02
-        #                  &SHORTNAME=NLDAS_FORA0125_H
-        #                  &BBOX=25%2C-125%2C53%2C-67
-        #                  &LABEL=NLDAS_FORA0125_H.A
-        #                  20170101.0000.
-        #                  020.nc.SUB.nc4
-        #                  &FORMAT=bmM0Lw
-        #                  &DATASET_VERSION=2.0
-        
-        URL_FORA <- paste('https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORA0125_H.2.0%2F',
-                          yearOut, '%2F',
-                          str_pad(as.numeric(yday(as.Date(paste0(yearOut,"-", monthOut,'-' ,dayOut)))), 3, pad = "0"), ## The URL changes for every chunk of 24 hours
-                          '%2FNLDAS_FORA0125_H.A',
-                          yearOut, monthOut, dayOut, '.',
-                          hourOut,  
-                          '.020.nc',
-                          '&SERVICE=L34RS_LDAS',
-                          '&VERSION=1.02',
-                          '&SHORTNAME=NLDAS_FORA0125_H',
-                          '&BBOX=',
-                          round(extent[2], 2),'%2C', # In the new version of the URL, the coordinates are only up to 2 digits
-                          round(extent[1], 2),'%2C',
-                          round(extent[4], 2),'%2C',
-                          round(extent[3], 2),
-                          '&LABEL=NLDAS_FORA0125_H.A',
-                          yearOut, monthOut, dayOut, '.',
-                          hourOut,
-                          '.020.nc.SUB.nc4',
-                          '&FORMAT=bmM0Lw',
-                          #'&VARIABLES=Tair', #Commenting this out gets all the variables
-                          '&DATASET_VERSION=2.0',
-                          sep='')  
-        
-        #Try updating to match this which comes from the hourly forcing subsetting from GES DISC
-        #https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORB0125_H.2.0%2F2017%2F001%2FNLDAS_FORB0125_H.A20170101.0000.020.nc&LABEL=NLDAS_FORB0125_H.A20170101.0000.020.nc.SUB.nc4&VERSION=1.02&SERVICE=L34RS_LDAS&FORMAT=bmM0Lw&VARIABLES=Tair&SHORTNAME=NLDAS_FORB0125_H&BBOX=41.759%2C-74.06%2C41.762%2C-74.057&DATASET_VERSION=2.0
-        #This will get FORB which doesn't have long wave radiation 
-        URL_FORB <- paste('https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORB0125_H.2.0%2F',
-                          yearOut, '%2F',
-                          str_pad(as.numeric(yday(as.Date(paste0(yearOut,"-", monthOut,'-' ,dayOut)))), 3, pad = "0"), ## The URL changes for every chunk of 24 hours
-                          '%2FNLDAS_FORB0125_H.A',
-                          yearOut, monthOut, dayOut, '.',
-                          hourOut,  
-                          '.020.nc',
-                          '&LABEL=NLDAS_FORA0125_H.A',
-                          yearOut, monthOut, dayOut, '.',
-                          hourOut,
-                          '.020.nc.SUB.nc4&',
-                          'VERSION=1.02&SERVICE=L34RS_LDAS&FORMAT=bmM0Lw',
-                          #'&VARIABLES=Tair', #Commenting this out gets all the variables
-                          '&SHORTNAME=NLDAS_FORA0125_H',
-                          '&BBOX=', 
-                          round(extent[2], 2),'%2C', # In the new version of the URL, the coordinates are only up to 2 digits
-                          round(extent[1], 2),'%2C',
-                          round(extent[4], 2),'%2C',
-                          round(extent[3], 2),
-                          '&DATASET_VERSION=2.0',
-                          sep='')
-        
-        # URL <- paste('https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORA0125_H.002%2F',
-        #              yearOut, '%2F',
-        #              str_pad(as.numeric(yday(as.Date(paste0(yearOut,"-", monthOut,'-' ,dayOut)))), 3, pad = "0"), ## The URL changes for every chunk of 24 hours
-        #              '%2FNLDAS_FORA0125_H.A',
-        #              yearOut, monthOut, dayOut, '.',
-        #              hourOut,  '.002.grb&FORMAT=bmM0Lw&BBOX=', 
-        #              round(extent[2], 2),'%2C', # In the new version of the URL, the coordinates are only up to 2 digits
-        #              round(extent[1], 2),'%2C',
-        #              round(extent[4], 2),'%2C',
-        #              round(extent[3], 2),
-        #              '&LABEL=NLDAS_FORA0125_H.A',
-        #              yearOut,monthOut,dayOut,'.',
-        #              hourOut,
-        #              '.002.grb.nc4&SHORTNAME=NLDAS_FORA0125_H&SERVICE=L34RS_LDAS&VERSION=1.02&DATASET_VERSION=002',
-        #              sep='')
-        
-        # IMPORTANT MESSAGE Dec 05, 2016    The GES DISC will be migrating from http to https throughout December
-        # As part of our ongoing migration to HTTPS, the GES DISC will begin redirecting all HTTP traffic to HTTPS.
-        # We expect to have all GES DISC sites redirecting traffic by January 4th. For most access methods, the redirect will be transparent to the user.
-        # However, users with locally developed scripts or utilities that do not support an HTTP code 301 redirect may find that the scripts will fail.
-        # If you access our servers non-interactively (i.e. via a mechanism other than a modern web browser), you will want to modify your scripts to
-        # point to the HTTPS addresses to avoid the enforced redirect.
-        
-        # x = download.file(URL3,destfile = paste(filename,'.nc',sep=''),mode = 'wb',quiet = T)
-        # x = download.file(URL,destfile = paste(filename,'.nc',sep=''),mode = 'wb',quiet = T)
-        
-        
-        lk <- URL_FORA #Can also use FORB if not needing long wave radiation
-        
-        #wget:
-        #r <- GET(lk,
-        #          authenticate("ptran5@wisc.edu", "Earthdata1"),
-        #          path = "~/Documents/MendotaRawData/")
-        
-        # or this with curl
-        h <- curl::new_handle()
-        
-        #A handle is used to configure a request with custom options, headers and payload. Once the handle has been set up, it can be passed to any of the download functions such as curl()####
-        curl::handle_setopt(
-          handle = h,
-          httpauth = 1,
-          userpwd = paste0(username, ':', password)
-        )
-        
-        # resp <- curl::curl_fetch_memory(lk, handle = h)
-        resp <- curl::curl_fetch_disk(url = lk, 
-                                      path = paste(dumpdir_nc, filename, '_', loc_tz, '.nc',sep=''), 
-                                      handle = h)
-        
-        #Sys.sleep(2)
-        
-      }
-      
-      # Stop the clock
-      proc.time() - ptm
-      
-      
-
-
-
-          
-  
-      
-###########################################################
-### End Step. 2 DOWNLOAD NC DATA####
-###########################################################
-
-#If at this point, the year download didn't finish, then check the download folder. Delete any files that downloaded incompletely (they should be <90kb)####
-#When you rerun this code from the beginning, it will start back up where you left off####
-
 
 ###########################################################
 ### Step 4. EXTRACT DATA FROM NC ####
@@ -632,4 +466,167 @@ write_csv(drivers%>%mutate(time=as.character(time)),
                    '_to_', 
                    paste(year_final,month_final,day_final,sep="_"),
                    '_hourly.csv'))
+
+### Katie Stop here ********
+
+
+###########################################################
+### Step 2. DOWNLOAD NC DATA#### 
+### Run hourly loop
+### Pocket Pancake's Loop (AKA Dave's original code)
+###########################################################
+
+# Start the clock!
+ptm <- proc.time()
+
+#Set the timeout limit - might help if you are gettinng connection timed out after 10006 milliseconds error message
+#getOption('timeout')
+#options(timeout=20006)
+
+
+#This takes about 2.7 seconds per download. This is 65 seconds per day, ~32 minutes per month, 6.6 hours per year
+for (i in 1:length(out.ts)) {
+  print(out.ts[i])
+  yearOut = year(out.ts[i])
+  monthOut = format(out.ts[i], "%m")
+  dayOut = format(out.ts[i], "%d")
+  hourOut = format(out.ts[i], "%H%M")
+  doyOut = format(out.ts[i],'%j')
+  
+  filename = format(out.ts[i], "%Y%m%d%H%M")
+  
+  #Get URL for FORA which has 12 output variables including long wave radiation####
+  #Trying to match up with the URL from FORA gotten from subsetting data here and downloading links list####
+  #https://disc.gsfc.nasa.gov/datasets/NLDAS_FORA0125_H_2.0/summary?keywords=NLDAS
+  #                  https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORA0125_H.2.0%2F
+  #                  2017%2F
+  #                  001
+  #                  %2FNLDAS_FORA0125_H.A
+  #                  20170101.
+  #                  0000
+  #                  .020.nc
+  #                  &SERVICE=L34RS_LDAS
+  #                  &VERSION=1.02
+  #                  &SHORTNAME=NLDAS_FORA0125_H
+  #                  &BBOX=25%2C-125%2C53%2C-67
+  #                  &LABEL=NLDAS_FORA0125_H.A
+  #                  20170101.0000.
+  #                  020.nc.SUB.nc4
+  #                  &FORMAT=bmM0Lw
+  #                  &DATASET_VERSION=2.0
+  
+  URL_FORA <- paste('https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORA0125_H.2.0%2F',
+                    yearOut, '%2F',
+                    str_pad(as.numeric(yday(as.Date(paste0(yearOut,"-", monthOut,'-' ,dayOut)))), 3, pad = "0"), ## The URL changes for every chunk of 24 hours
+                    '%2FNLDAS_FORA0125_H.A',
+                    yearOut, monthOut, dayOut, '.',
+                    hourOut,  
+                    '.020.nc',
+                    '&SERVICE=L34RS_LDAS',
+                    '&VERSION=1.02',
+                    '&SHORTNAME=NLDAS_FORA0125_H',
+                    '&BBOX=',
+                    round(extent[2], 2),'%2C', # In the new version of the URL, the coordinates are only up to 2 digits
+                    round(extent[1], 2),'%2C',
+                    round(extent[4], 2),'%2C',
+                    round(extent[3], 2),
+                    '&LABEL=NLDAS_FORA0125_H.A',
+                    yearOut, monthOut, dayOut, '.',
+                    hourOut,
+                    '.020.nc.SUB.nc4',
+                    '&FORMAT=bmM0Lw',
+                    #'&VARIABLES=Tair', #Commenting this out gets all the variables
+                    '&DATASET_VERSION=2.0',
+                    sep='')  
+  
+  #Try updating to match this which comes from the hourly forcing subsetting from GES DISC
+  #https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORB0125_H.2.0%2F2017%2F001%2FNLDAS_FORB0125_H.A20170101.0000.020.nc&LABEL=NLDAS_FORB0125_H.A20170101.0000.020.nc.SUB.nc4&VERSION=1.02&SERVICE=L34RS_LDAS&FORMAT=bmM0Lw&VARIABLES=Tair&SHORTNAME=NLDAS_FORB0125_H&BBOX=41.759%2C-74.06%2C41.762%2C-74.057&DATASET_VERSION=2.0
+  #This will get FORB which doesn't have long wave radiation 
+  URL_FORB <- paste('https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORB0125_H.2.0%2F',
+                    yearOut, '%2F',
+                    str_pad(as.numeric(yday(as.Date(paste0(yearOut,"-", monthOut,'-' ,dayOut)))), 3, pad = "0"), ## The URL changes for every chunk of 24 hours
+                    '%2FNLDAS_FORB0125_H.A',
+                    yearOut, monthOut, dayOut, '.',
+                    hourOut,  
+                    '.020.nc',
+                    '&LABEL=NLDAS_FORA0125_H.A',
+                    yearOut, monthOut, dayOut, '.',
+                    hourOut,
+                    '.020.nc.SUB.nc4&',
+                    'VERSION=1.02&SERVICE=L34RS_LDAS&FORMAT=bmM0Lw',
+                    #'&VARIABLES=Tair', #Commenting this out gets all the variables
+                    '&SHORTNAME=NLDAS_FORA0125_H',
+                    '&BBOX=', 
+                    round(extent[2], 2),'%2C', # In the new version of the URL, the coordinates are only up to 2 digits
+                    round(extent[1], 2),'%2C',
+                    round(extent[4], 2),'%2C',
+                    round(extent[3], 2),
+                    '&DATASET_VERSION=2.0',
+                    sep='')
+  
+  # URL <- paste('https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORA0125_H.002%2F',
+  #              yearOut, '%2F',
+  #              str_pad(as.numeric(yday(as.Date(paste0(yearOut,"-", monthOut,'-' ,dayOut)))), 3, pad = "0"), ## The URL changes for every chunk of 24 hours
+  #              '%2FNLDAS_FORA0125_H.A',
+  #              yearOut, monthOut, dayOut, '.',
+  #              hourOut,  '.002.grb&FORMAT=bmM0Lw&BBOX=', 
+  #              round(extent[2], 2),'%2C', # In the new version of the URL, the coordinates are only up to 2 digits
+  #              round(extent[1], 2),'%2C',
+  #              round(extent[4], 2),'%2C',
+  #              round(extent[3], 2),
+  #              '&LABEL=NLDAS_FORA0125_H.A',
+  #              yearOut,monthOut,dayOut,'.',
+  #              hourOut,
+  #              '.002.grb.nc4&SHORTNAME=NLDAS_FORA0125_H&SERVICE=L34RS_LDAS&VERSION=1.02&DATASET_VERSION=002',
+  #              sep='')
+  
+  # IMPORTANT MESSAGE Dec 05, 2016    The GES DISC will be migrating from http to https throughout December
+  # As part of our ongoing migration to HTTPS, the GES DISC will begin redirecting all HTTP traffic to HTTPS.
+  # We expect to have all GES DISC sites redirecting traffic by January 4th. For most access methods, the redirect will be transparent to the user.
+  # However, users with locally developed scripts or utilities that do not support an HTTP code 301 redirect may find that the scripts will fail.
+  # If you access our servers non-interactively (i.e. via a mechanism other than a modern web browser), you will want to modify your scripts to
+  # point to the HTTPS addresses to avoid the enforced redirect.
+  
+  # x = download.file(URL3,destfile = paste(filename,'.nc',sep=''),mode = 'wb',quiet = T)
+  # x = download.file(URL,destfile = paste(filename,'.nc',sep=''),mode = 'wb',quiet = T)
+  
+  
+  lk <- URL_FORA #Can also use FORB if not needing long wave radiation
+  
+  #wget:
+  #r <- GET(lk,
+  #          authenticate("ptran5@wisc.edu", "Earthdata1"),
+  #          path = "~/Documents/MendotaRawData/")
+  
+  # or this with curl
+  h <- curl::new_handle()
+  
+  #A handle is used to configure a request with custom options, headers and payload. Once the handle has been set up, it can be passed to any of the download functions such as curl()####
+  curl::handle_setopt(
+    handle = h,
+    httpauth = 1,
+    userpwd = paste0(username, ':', password)
+  )
+  
+  # resp <- curl::curl_fetch_memory(lk, handle = h)
+  resp <- curl::curl_fetch_disk(url = lk, 
+                                path = paste(dumpdir_nc, filename, '_', loc_tz, '.nc',sep=''), 
+                                handle = h)
+  
+  #Sys.sleep(2)
+  
+}
+
+# Stop the clock
+proc.time() - ptm
+
+
+###########################################################
+### End Step. 2 DOWNLOAD NC DATA####
+###########################################################
+
+#If at this point, the year download didn't finish, then check the download folder. Delete any files that downloaded incompletely (they should be <90kb)####
+#When you rerun this code from the beginning, it will start back up where you left off####
+
+
 
