@@ -145,8 +145,48 @@ out.ts = seq.POSIXt(as.POSIXct(startdatetime, tz = loc_tz),as.POSIXct(enddatetim
   #out.ts<-c(as.POSIXct("2019-12-31 23:00:00", tz = loc_tz),as.POSIXct("2019-12-31 15:00:00", tz = loc_tz),as.POSIXct("2019-12-31 11:00:00", tz = loc_tz),as.POSIXct("2019-12-17 11:00:00", tz = loc_tz))
   #out.ts<-c(as.POSIXct("2017-07-28 17:00:00", tz = loc_tz),as.POSIXct("2017-08-12 21:00:00", tz = loc_tz),as.POSIXct("2017-08-12 20:00:00", tz = loc_tz),as.POSIXct("2017-07-28 19:00:00", tz = loc_tz), as.POSIXct("2017-08-22 02:00:00", tz = loc_tz), as.POSIXct("2017-08-13 00:00:00", tz = loc_tz), as.POSIXct("2017-08-23 09:00:00", tz = loc_tz), as.POSIXct("2017-08-24 16:00:00", tz = loc_tz))
 
+
+  ##############################
+  # Modified Step 3. Re-Run Missing NC files without having to type out all of the times 
+  ##############################
+  # save a list of all of the files you should have for a year (each hour for each year )
+      startdatetime = paste0(year,'-01-01 00:00:00') #set the start date to the begining of the year 
+      enddatetime = paste0(year,'-12-31 23:00:00') #set the end date to the end of the year 
+      all_times <- seq.POSIXt(as.POSIXct(startdatetime, tz = loc_tz),as.POSIXct(enddatetime,tz=loc_tz), by = 'hour') #create a sequence of all the datetimes from the start date to the end date ny hour 
+      
+  # Save a list of the files that you currently have downloaded 
+      getwd() # check your working directory 
+      setwd("10_TheLoch/input/NLDAS/2018") #set the working directory to the NLDAS folder that corresponds to the year you are working with 
+      file_names <- list.files(pattern = ".nc") %>% as.data.frame() # list all of the files in that folder that end with nc and save that as a dataframe 
+      setwd("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/05_Research_Projects/04_OnThinIce_ModeledLakes/ThinIce-GLM")
+      
+  # Format that list of files you currently have downloaded into the as.POSIXct format to match the normal out.ts
+      names(file_names) <- "file_name" # name the column that contains the raw file name
+      file_names$year <- substring(file_names$file_name, 1, 4) #create a year column 
+      file_names$month <- substring(file_names$file_name, 5, 6)
+      file_names$day <- substring(file_names$file_name, 7, 8)
+      file_names$hour <- substring(file_names$file_name, 9, 10)
+      file_names$date_formatted <- paste(file_names$year, "-", file_names$month, "-", file_names$day, " ", file_names$hour, ":00:00", sep="") 
+      saved_files <-as.POSIXct(file_names$date_formatted, format = "%Y-%m-%d %H:%M:%S")  # formnat to a POSIXct and make sure to keep the hours and minutes! 
+      
+  # Anti-join those two lists to see what you are missing (the files that didn't download fully and so you deleted)
+    # Format into characters and check formatting because setdiff does not get along well with POSIXct formatting 
+    all_times <- as.character(all_times)
+    saved_files <- as.character(saved_files)
+    str(all_times)
+    str(saved_files)
+    
+    # Identify times in all_times that are not in saved_files
+    missing_times <- setdiff(all_times, saved_files)
+    str(missing_times) #Check that your missing times look correct 
+      
+  # Now set that list of missing files as your out.ts and re-run the loop to download data 
+    out.ts <-as.POSIXct(missing_times, format = "%Y-%m-%d %H:%M:%S") 
+    out.ts <- out.ts[!is.na(out.ts)] #remove the NAs (midnight formatts funky and breaks )
+
 # Create output list of tables
 output = list()
+
 
 ###########################################################
 ### Step 2. DOWNLOAD NC DATA#### 
