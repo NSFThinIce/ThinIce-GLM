@@ -73,7 +73,7 @@ source("01_Scripts/00_ThinIce-GLM-Functions.R")
 ###########################################################
 lakeNumber<-"10" #number of the folder####
 lakeName<-"TheLoch" #Lake name here####
-year<-2018 #set the year here, GL4: 2018-2024; 2018-2020: KG: B, 2020-2021 IAO: C; 2022-2024 DCR: A#### 
+year<-2017 #set the year here, GL4: 2018-2024; 2018-2020: KG: B, 2020-2021 IAO: C; 2022-2024 DCR: A#### 
 local_tz_set = "US/Mountain" #enter the timezone you would like to have the final data in. see OlsonNames() for options, e.g., "EST", "US/Mountain", "US/Central" ####
 loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad when you go to collate and it's a mess.####
 extent = as.numeric(c(-105.67,40.29,-105.65,40.30)) #Enter in the decimal degree bounding box of your lake rounded to two decimals####
@@ -156,7 +156,7 @@ out.ts = seq.POSIXt(as.POSIXct(startdatetime, tz = loc_tz),as.POSIXct(enddatetim
       
   # Save a list of the files that you currently have downloaded 
       getwd() # check your working directory 
-      setwd("10_TheLoch/input/NLDAS/2018") #set the working directory to the NLDAS folder that corresponds to the year you are working with 
+      setwd("/Volumes/External_From_Chad/NLDAS_Data/LOC/2017") #set the working directory to the NLDAS folder that corresponds to the year you are working with 
       file_names <- list.files(pattern = ".nc") %>% as.data.frame() # list all of the files in that folder that end with nc and save that as a dataframe 
       setwd("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/05_Research_Projects/04_OnThinIce_ModeledLakes/ThinIce-GLM")
       
