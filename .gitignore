@@ -2,4 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
-*/07_GL4/input/NLDAS/
+*.DS_Store
+/07_GL4/input/NLDAS/
