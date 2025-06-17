@@ -1,16 +1,3 @@
-###########################################################
-### WARNING: THIS IS ONE OF TWO IDENTICAL FILES! IF YOU CHANGE THIS ONE, THE OTHER WILL NOT BE UPDATED!!!!####
-### Downloading NLDAS2 data for meteorological hourly forcing
-### http://ldas.gsfc.nasa.gov/nldas/NLDAS2forcing.php
-### Original author: Hilary Dugan hilarydugan@gmail.com
-### Date: 2019-09-30
-### Modified from the Carey lab script from Hilary:
-### https://github.com/CareyLabVT/Sunapee-GLM/blob/master/NLDASData/getNLDAS_simple.R
-### https://github.com/CareyLabVT/Sunapee-GLM/tree/master/NLDASData
-### Current code editor: Dave Richardson: richardsond@newpaltz.edu
-### Date: 21Apr2025
-### Edited for the modeled lakes, NSF Thin Ice Project
-###
 ### Steps of operation
 ### 1. Enter relevant data in "Step 1. LAKE DATA"
 ### 2. Run code through "END Step 2. DOWNLOAD NC DATA"
@@ -28,15 +15,16 @@
 ###########################################################
 
 ##############Add in install.package statements here########### 
-if(!require('RCurl')){install.packages(RCurl)} #Accessing files through URLS
-if(!require('lubridate')){install.packages(lubridate)}
-if(!require('raster')){install.packages(raster)}
-if(!require('ncdf4')){install.packages(ncdf4)} #help downloading the data
-if(!require('sf')){install.packages(sf)}
-if(!require('httr')){install.packages(httr)}
-if(!require('curl')){install.packages(curl)}
-if(!require('stringr')){install.packages(stringr)}
-if(!require('tidyverse')){install.packages(tidyverse)}
+if(!require('RCurl')){install.packages('RCurl')} #Accessing files through URLS
+if(!require('lubridate')){install.packages('lubridate')}
+if(!require('raster')){install.packages('raster')}
+if(!require('ncdf4')){install.packages('ncdf4')} #help downloading the data
+if(!require('sf')){install.packages('sf')}
+if(!require('httr')){install.packages('httr')}
+if(!require('curl')){install.packages('curl')}
+if(!require('stringr')){install.packages('stringr')}
+if(!require('tidyverse')){install.packages('tidyverse')}
+if(!require('rvest')){install.packages('rvest')} # For parsing HTML during authentication
 
 #Load libraries#####
 library(RCurl)
@@ -48,6 +36,7 @@ library(httr)
 library(curl)
 library(stringr)
 library(tidyverse)
+library(rvest)
 
 #Run the functions code####
 source("01_Scripts/00_ThinIce-GLM-Functions.R")
@@ -85,17 +74,237 @@ if(!file.exists(dumpdir_nc)){dir.create(file.path(dumpdir_nc))}
 if(!file.exists(dumpdir_csv)){dir.create(file.path(dumpdir_csv))}
 if(!file.exists(dumpdir_compiled)){dir.create(file.path(dumpdir_compiled))}
 
-
 ###########################################################
 ### Enter password information
 ###########################################################
-#https://urs.earthdata.nasa.gov/profile <-- GET A EARTHDATA LOGIN
-username = 'thiniceproject'
-password = 'Cyanotoxin1234!!'
+username <- "thiniceproject"
+password <- "Cyanotoxin1234!!"  
 
-#in addition, make sure you have authorized your account access to the GEODISC archives:
-# https://disc.gsfc.nasa.gov/earthdata-login
+###########################################################
+### NASA Earthdata Authentication Function
+### This function facilitates login to NASA's Earthdata system
+### and retrieves cookies for use in authenticated requests.
+###########################################################
+authenticate_earthdata <- function(username, password) {
+  
+  # Print a status message to indicate the authentication process has started
+  print("Authenticating with NASA Earthdata...")
+  
+  # Create a session to maintain cookies
+  # `session()` initializes a new web session using the provided URL.
+  # This session will handle all subsequent interactions.
+  session <- session("https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code&client_id=_JLuwMHxb2xX6NwYTb4dRA")
+  
+  #  Navigate to the Earthdata login homepage within the session
+  # `session_jump_to()` makes a request to the specified URL and updates the session.
+  login_page <- session_jump_to(session, "https://urs.earthdata.nasa.gov/home")
+  
+  # Extract the login form from the Earthdata login page
+  # `html_form()` parses the HTML content of the page and extracts form elements.
+  #  first form on the page is the login form.
+  login_form <- html_form(login_page)[[1]]
+  
+  # Populate the login form with the user's credentials
+  # `html_form_set()` fills in the username and password fields.
+  # The `username` and `password` arguments are passed to this function.
+  filled_form <- html_form_set(login_form, 
+                               username = username,
+                               password = password)
+  
+  # Submit the filled-in login form to the server
+  # `session_submit()` sends the form to the server and updates the session with the response.
+  session <- session_submit(session, filled_form)
+  
+  # Extract cookies from the response for use with `httr`
+  # The cookies are needed to authenticate subsequent requests.
+  # `session$response$cookies` contains a list of cookies from the server.
+  cookies <- session$response$cookies
+  
+  # Convert the cookies into a single string format
+  # This string is a concatenation of `name=value` pairs, separated by semicolons.
+  cookie_string <- paste(paste(cookies$name, cookies$value, sep="="), collapse="; ")
+  
+  # Return the session and cookie string as a list
+  # The session allows continued interaction with the authenticated server.
+  # The cookie string can be used for making requests with other libraries, like `httr`.
+  return(list(session = session, cookies = cookie_string))
+}
 
+###########################################################
+### Alternative Download Function Using System Calls
+### This function leverages `wget` via a system call to 
+### download a file with authentication using credentials.
+###########################################################
+
+download_with_wget <- function(url, output_file, username, password) {
+  
+  # Create a .netrc file for wget authentication
+  # The .netrc file stores credentials for automated access.
+  # The `paste0()` function concatenates strings to create the file's content.
+  netrc_content <- paste0("machine urs.earthdata.nasa.gov\n",
+                          "login ", username, "\n",
+                          "password ", password, "\n")
+  
+  # Generate a temporary file to store the .netrc content
+  # `tempfile()` creates a unique temporary file path.
+  netrc_file <- tempfile()
+  
+  # Write the .netrc content to the temporary file
+  # `writeLines()` writes the authentication credentials into the file.
+  writeLines(netrc_content, netrc_file)
+  
+  # Construct the `wget` command
+  # `wget` is a system utility for downloading files from the web.
+  # Here, it is configured with options for authentication and saving the file.
+  wget_cmd <- paste0("wget ", 
+                     "--load-cookies /dev/null ",            # Avoid using existing cookies
+                     "--save-cookies /dev/null ",            # Avoid saving cookies
+                     "--auth-no-challenge=on ",              # Enable pre-emptive authentication
+                     "--user=", username, " ",               # Add the username for Basic Authentication
+                     "--password=", password, " ",           # Add the password for Basic Authentication
+                     "--content-disposition ",               # Use the server's suggested filename if available
+                     "-O '", output_file, "' ",              # Specify the output file location
+                     "'", url, "'")                          # Specify the download URL
+  
+  
+  # Execute the `wget` command
+  # `system()` runs the command in the system shell.
+  # `intern = TRUE` captures the command output for debugging or logging.
+  # `ignore.stderr = FALSE` ensures error messages are not suppressed.
+  result <- system(wget_cmd, intern = TRUE, ignore.stderr = FALSE)
+  
+  # Clean up by removing the temporary .netrc file
+  # `file.remove()` deletes the temporary file to ensure credentials are not left behind.
+  file.remove(netrc_file)
+  
+  # Verify if the file was successfully downloaded
+  # `file.exists()` checks if the file exists.
+  # `file.info()` retrieves file metadata; `$size` checks if the file's size exceeds 1000 bytes/1kb.
+  return(file.exists(output_file) && file.info(output_file)$size > 1000)
+}
+
+###########################################################
+### Enhanced Download Function with Multiple Methods
+### This function tries several approaches to download a file 
+### while handling authentication and network issues.
+###########################################################
+
+download_nldas_file <- function(url, output_file, username, password, auth_session = NULL) {
+  
+  # Method 1: Use authenticated session if available
+  if (!is.null(auth_session)) { # Check if a valid session is passed
+    tryCatch({
+      # Use the session to jump to the desired URL
+      response <- session_jump_to(auth_session$session, url)
+      
+      # Check if the request was successful (HTTP status 200)
+      if (response$response$status_code == 200) {
+        # Save the content to the specified output file
+        content <- response$response$content
+        writeBin(content, output_file) # Write binary data to file
+        
+        # Validate file existence and size
+        if (file.exists(output_file) && file.info(output_file)$size > 1000) {
+          return(list(success = TRUE, method = "session", size = file.info(output_file)$size))
+        }
+      }
+    }, error = function(e) { # Handle errors
+      print(paste("Session method failed:", e$message))
+    })
+  }
+  
+  # Method 2: Try httr with different authentication approaches
+  tryCatch({
+    response <- httr::GET(
+      url,
+      httr::authenticate(username, password, type = "digest"), # Try with digest authentication
+      httr::write_disk(output_file, overwrite = TRUE), 
+      httr::timeout(300),
+      httr::user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"),
+      httr::add_headers(
+        "Accept" = "application/octet-stream, */*",
+        "Accept-Language" = "en-US,en;q=0.9"
+      )
+    )
+    # Check response status and file size
+    if (httr::status_code(response) == 200 && file.exists(output_file) && file.info(output_file)$size > 1000) {
+      return(list(success = TRUE, method = "httr_digest", size = file.info(output_file)$size))
+    }
+  }, error = function(e) {
+    print(paste("httr digest failed:", e$message))
+  })
+  
+  # Method 3: Try httr with basic authentication
+  tryCatch({
+    response <- httr::GET(
+      url,
+      httr::authenticate(username, password, type = "basic"),
+      httr::write_disk(output_file, overwrite = TRUE),
+      httr::timeout(300),
+      httr::user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+    )
+    # Check response status and file size
+    if (httr::status_code(response) == 200 && file.exists(output_file) && file.info(output_file)$size > 1000) {
+      return(list(success = TRUE, method = "httr_basic", size = file.info(output_file)$size))
+    }
+  }, error = function(e) {
+    print(paste("httr basic failed:", e$message))
+  })
+  
+  # Method 4: Try curl with enhanced options
+  tryCatch({
+    h <- curl::new_handle() # Create a new curl handle
+    curl::handle_setopt(
+      handle = h,
+      httpauth = 1,          # Enable HTTP authentication
+      userpwd = paste0(username, ':', password),   # Set username and password
+      followlocation = TRUE,
+      maxredirs = 10,
+      ssl_verifypeer = TRUE,
+      ssl_verifyhost = 2,
+      useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      timeout = 300,
+      connecttimeout = 60,
+      cookiefile = "",  # Enable cookie engine
+      cookiejar = "",   # Save cookies
+      verbose = FALSE
+    )
+    # Fetch the file and save it
+    resp <- curl::curl_fetch_disk(url = url, path = output_file, handle = h)
+    
+    # Validate file existence and size
+    if (file.exists(output_file) && file.info(output_file)$size > 1000) {
+      return(list(success = TRUE, method = "curl_enhanced", size = file.info(output_file)$size))
+    }
+  }, error = function(e) {
+    print(paste("Enhanced curl failed:", e$message))
+  })
+  
+  # Method 5: Use wget via system call
+  if (Sys.which("wget") != "") {
+    if (download_with_wget(url, output_file, username, password)) {
+      return(list(success = TRUE, method = "wget", size = file.info(output_file)$size))
+    }
+  }
+  
+  # Method 6: Use curl via system call
+  if (Sys.which("curl") != "") {
+    tryCatch({
+      curl_cmd <- paste0("curl -L -u ", username, ":", password, 
+                         " -o '", output_file, "' '", url, "'")
+      system(curl_cmd)
+      
+      if (file.exists(output_file) && file.info(output_file)$size > 1000) {
+        return(list(success = TRUE, method = "system_curl", size = file.info(output_file)$size))
+      }
+    }, error = function(e) {
+      print(paste("System curl failed:", e$message))
+    })
+  }
+  
+  # If all methods fail, return failure
+  return(list(success = FALSE, method = "none", size = 0))
+}
 
 ###########################################################
 ### Set timeframe
@@ -117,19 +326,18 @@ if(length(nc_files)==0){
 
 enddatetime = paste0(year,'-12-31 23:00:00') #set the end date at the end of the year
 
-
 # sequence the datetime over your desired time period
 # this creates a sequence of datetimes from the first day of the year (or the first time period) to the end of the year
 out.ts = seq.POSIXt(as.POSIXct(startdatetime, tz = loc_tz),as.POSIXct(enddatetime,tz=loc_tz), by = 'hour')
-  
-  ##############################
-  ### Step 3. RERUN MISSING NC FILES####
-  ##############################
-  #In case any need rerunning, can create a specific list here. SOmetimes, it appears that the download doesn;t work. You can tell this if the nc file size is 2KB instead of 90KB 
-  #Do not uncomment these - but just run the code after the #
-  #out.ts<-c(as.POSIXct("2019-01-11 07:00:00", tz = loc_tz),as.POSIXct("2019-01-12 01:00:00", tz = loc_tz),as.POSIXct("2019-06-24 03:00:00", tz = loc_tz),as.POSIXct("2019-11-19 21:00:00", tz = loc_tz))
-  #out.ts<-c(as.POSIXct("2024-10-20 07:00:00", tz = loc_tz),as.POSIXct("2024-11-15 23:00:00", tz = loc_tz))
 
+##############################
+### Step 3. RERUN MISSING NC FILES####
+##############################
+#In case any need rerunning, can create a specific list here. SOmetimes, it appears that the download doesn;t work. You can tell this if the nc file size is 2KB instead of 90KB 
+#Do not uncomment these - but just run the code after the #
+#out.ts<-c(as.POSIXct("2019-01-11 07:00:00", tz = loc_tz),as.POSIXct("2019-01-12 01:00:00", tz = loc_tz),as.POSIXct("2019-06-24 03:00:00", tz = loc_tz),as.POSIXct("2019-11-19 21:00:00", tz = loc_tz))
+#out.ts<-c(as.POSIXct("2024-10-20 07:00:00", tz = loc_tz),as.POSIXct("2024-11-15 23:00:00", tz = loc_tz))
+#out.ts <- c(as.POSIXct("2024-01-01 01:00:00", tz = loc_tz))
 # Create output list of tables
 output = list()
 
@@ -137,17 +345,36 @@ output = list()
 ### Step 2. DOWNLOAD NC DATA#### 
 ### Run hourly loop
 ###########################################################
+
+# Test credentials first
+print("Testing NASA Earthdata credentials...")
+auth_session <- NULL
+tryCatch({
+  auth_session <- authenticate_earthdata(username, password)
+  print("✓ Authentication session created successfully")
+}, error = function(e) {
+  print(paste("⚠ Authentication session failed:", e$message))
+  print("Will try alternative methods...")
+})
+
 # Start the clock!
 ptm <- proc.time()
 
-#Set the timeout limit - might help if you are gettinng connection timed out after 10006 milliseconds error message
-#getOption('timeout')
-#options(timeout=20006)
+# Set timeout options
+options(timeout = 300)
 
+# Initialize counters
+successful_downloads <- 0
+failed_downloads <- 0
 
-#This takes about 2.7 seconds per download. This is 65 seconds per day, ~32 minutes per month, 6.6 hours per year
+print(paste("Starting download of", length(out.ts), "files..."))
+
 for (i in 1:length(out.ts)) {
-  print(out.ts[i])
+  if (i %% 100 == 0) {  # Progress update every 100 files
+    print(paste("Progress:", i, "of", length(out.ts), "files processed"))
+    print(paste("Success rate:", round(successful_downloads/(successful_downloads + failed_downloads)*100, 1), "%"))
+  }
+  
   yearOut = year(out.ts[i])
   monthOut = format(out.ts[i], "%m")
   dayOut = format(out.ts[i], "%d")
@@ -155,30 +382,18 @@ for (i in 1:length(out.ts)) {
   doyOut = format(out.ts[i],'%j')
   
   filename = format(out.ts[i], "%Y%m%d%H%M")
+  output_file = paste(dumpdir_nc, filename, '_', loc_tz, '.nc', sep='')
   
-  #Get URL for FORA which has 12 output variables including long wave radiation####
-  #Trying to match up with the URL from FORA gotten from subsetting data here and downloading links list####
-  #https://disc.gsfc.nasa.gov/datasets/NLDAS_FORA0125_H_2.0/summary?keywords=NLDAS
-  #                  https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORA0125_H.2.0%2F
-  #                  2017%2F
-  #                  001
-  #                  %2FNLDAS_FORA0125_H.A
-  #                  20170101.
-  #                  0000
-  #                  .020.nc
-  #                  &SERVICE=L34RS_LDAS
-  #                  &VERSION=1.02
-  #                  &SHORTNAME=NLDAS_FORA0125_H
-  #                  &BBOX=25%2C-125%2C53%2C-67
-  #                  &LABEL=NLDAS_FORA0125_H.A
-  #                  20170101.0000.
-  #                  020.nc.SUB.nc4
-  #                  &FORMAT=bmM0Lw
-  #                  &DATASET_VERSION=2.0
+  # Skip if file already exists and is larger than 1KB
+  if(file.exists(output_file) && file.info(output_file)$size > 1000) {
+    successful_downloads <- successful_downloads + 1
+    next
+  }
   
-    URL_FORA <- paste('https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORA0125_H.2.0%2F',
+  #Get URL for FORA
+  URL_FORA <- paste('https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORA0125_H.2.0%2F',
                     yearOut, '%2F',
-                    str_pad(as.numeric(yday(as.Date(paste0(yearOut,"-", monthOut,'-' ,dayOut)))), 3, pad = "0"), ## The URL changes for every chunk of 24 hours
+                    str_pad(as.numeric(yday(as.Date(paste0(yearOut,"-", monthOut,'-' ,dayOut)))), 3, pad = "0"),
                     '%2FNLDAS_FORA0125_H.A',
                     yearOut, monthOut, dayOut, '.',
                     hourOut,  
@@ -187,7 +402,7 @@ for (i in 1:length(out.ts)) {
                     '&VERSION=1.02',
                     '&SHORTNAME=NLDAS_FORA0125_H',
                     '&BBOX=',
-                    round(extent[2], 2),'%2C', # In the new version of the URL, the coordinates are only up to 2 digits
+                    round(extent[2], 2),'%2C',
                     round(extent[1], 2),'%2C',
                     round(extent[4], 2),'%2C',
                     round(extent[3], 2),
@@ -196,90 +411,58 @@ for (i in 1:length(out.ts)) {
                     hourOut,
                     '.020.nc.SUB.nc4',
                     '&FORMAT=bmM0Lw',
-                    #'&VARIABLES=Tair', #Commenting this out gets all the variables
                     '&DATASET_VERSION=2.0',
                     sep='')  
   
-  #Try updating to match this which comes from the hourly forcing subsetting from GES DISC
-  #https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORB0125_H.2.0%2F2017%2F001%2FNLDAS_FORB0125_H.A20170101.0000.020.nc&LABEL=NLDAS_FORB0125_H.A20170101.0000.020.nc.SUB.nc4&VERSION=1.02&SERVICE=L34RS_LDAS&FORMAT=bmM0Lw&VARIABLES=Tair&SHORTNAME=NLDAS_FORB0125_H&BBOX=41.759%2C-74.06%2C41.762%2C-74.057&DATASET_VERSION=2.0
-  #This will get FORB which doesn't have long wave radiation 
-  URL_FORB <- paste('https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORB0125_H.2.0%2F',
-               yearOut, '%2F',
-               str_pad(as.numeric(yday(as.Date(paste0(yearOut,"-", monthOut,'-' ,dayOut)))), 3, pad = "0"), ## The URL changes for every chunk of 24 hours
-               '%2FNLDAS_FORB0125_H.A',
-               yearOut, monthOut, dayOut, '.',
-               hourOut,  
-               '.020.nc',
-               '&LABEL=NLDAS_FORA0125_H.A',
-               yearOut, monthOut, dayOut, '.',
-               hourOut,
-               '.020.nc.SUB.nc4&',
-               'VERSION=1.02&SERVICE=L34RS_LDAS&FORMAT=bmM0Lw',
-               #'&VARIABLES=Tair', #Commenting this out gets all the variables
-               '&SHORTNAME=NLDAS_FORA0125_H',
-               '&BBOX=', 
-               round(extent[2], 2),'%2C', # In the new version of the URL, the coordinates are only up to 2 digits
-               round(extent[1], 2),'%2C',
-               round(extent[4], 2),'%2C',
-               round(extent[3], 2),
-               '&DATASET_VERSION=2.0',
-               sep='')
+  # Attempt download with multiple methods
+  result <- download_nldas_file(URL_FORA, output_file, username, password, auth_session)
   
-  # URL <- paste('https://hydro1.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi?FILENAME=%2Fdata%2FNLDAS%2FNLDAS_FORA0125_H.002%2F',
-  #              yearOut, '%2F',
-  #              str_pad(as.numeric(yday(as.Date(paste0(yearOut,"-", monthOut,'-' ,dayOut)))), 3, pad = "0"), ## The URL changes for every chunk of 24 hours
-  #              '%2FNLDAS_FORA0125_H.A',
-  #              yearOut, monthOut, dayOut, '.',
-  #              hourOut,  '.002.grb&FORMAT=bmM0Lw&BBOX=', 
-  #              round(extent[2], 2),'%2C', # In the new version of the URL, the coordinates are only up to 2 digits
-  #              round(extent[1], 2),'%2C',
-  #              round(extent[4], 2),'%2C',
-  #              round(extent[3], 2),
-  #              '&LABEL=NLDAS_FORA0125_H.A',
-  #              yearOut,monthOut,dayOut,'.',
-  #              hourOut,
-  #              '.002.grb.nc4&SHORTNAME=NLDAS_FORA0125_H&SERVICE=L34RS_LDAS&VERSION=1.02&DATASET_VERSION=002',
-  #              sep='')
-  
-  # IMPORTANT MESSAGE Dec 05, 2016    The GES DISC will be migrating from http to https throughout December
-  # As part of our ongoing migration to HTTPS, the GES DISC will begin redirecting all HTTP traffic to HTTPS.
-  # We expect to have all GES DISC sites redirecting traffic by January 4th. For most access methods, the redirect will be transparent to the user.
-  # However, users with locally developed scripts or utilities that do not support an HTTP code 301 redirect may find that the scripts will fail.
-  # If you access our servers non-interactively (i.e. via a mechanism other than a modern web browser), you will want to modify your scripts to
-  # point to the HTTPS addresses to avoid the enforced redirect.
-  
-  # x = download.file(URL3,destfile = paste(filename,'.nc',sep=''),mode = 'wb',quiet = T)
-  # x = download.file(URL,destfile = paste(filename,'.nc',sep=''),mode = 'wb',quiet = T)
-  
-  
-  lk <- URL_FORA #Can also use FORB if not needing long wave radiation
-  
-  #wget:
-  #r <- GET(lk,
-  #          authenticate("ptran5@wisc.edu", "Earthdata1"),
-  #          path = "~/Documents/MendotaRawData/")
-  
-  # or this with curl
-  h <- curl::new_handle()
-  
-  #A handle is used to configure a request with custom options, headers and payload. Once the handle has been set up, it can be passed to any of the download functions such as curl()####
-  curl::handle_setopt(
-    handle = h,
-    httpauth = 1,
-    userpwd = paste0(username, ':', password)
-  )
-  
-  # resp <- curl::curl_fetch_memory(lk, handle = h)
-  resp <- curl::curl_fetch_disk(url = lk, 
-                                path = paste(dumpdir_nc, filename, '_', loc_tz, '.nc',sep=''), 
-                                handle = h)
-  
-  #Sys.sleep(2)
-  
+  if (result$success) {
+    successful_downloads <- successful_downloads + 1
+    if (i <= 50 || i %% 100 == 0) {  # Show details for first 50 and every 100th
+      print(paste("✓", basename(output_file), "-", result$method, "-", round(result$size/1024, 1), "KB"))
+    }
+  } else {
+    failed_downloads <- failed_downloads + 1
+    print(paste("✗ Failed:", basename(output_file)))
+    
+    # Clean up failed file
+    if (file.exists(output_file)) {
+      file.remove(output_file)
+    }
+  }
 }
 
 # Stop the clock
-proc.time() - ptm
+total_time <- proc.time() - ptm
+print(paste("Total processing time:", round(total_time[3]/60, 1), "minutes"))
+
+# Final summary
+print("=== FINAL DOWNLOAD SUMMARY ===")
+downloaded_files <- list.files(dumpdir_nc, pattern = "\\.nc$", full.names = TRUE)
+if(length(downloaded_files) > 0) {
+  file_sizes <- sapply(downloaded_files, function(x) file.info(x)$size)
+  large_files <- sum(file_sizes > 1000)
+  small_files <- sum(file_sizes <= 1000)
+  
+  print(paste("Total files attempted:", length(out.ts)))
+  print(paste("Successful downloads (>1KB):", large_files))
+  print(paste("Failed downloads (≤1KB):", small_files))
+  print(paste("Success rate:", round(large_files/length(out.ts)*100, 1), "%"))
+  
+  if(small_files > 0) {
+    small_file_list <- downloaded_files[file_sizes <= 1000]
+    print("Files that need to be re-downloaded:")
+    print(basename(small_file_list))
+  }
+  
+  if(large_files > 0) {
+    avg_size <- mean(file_sizes[file_sizes > 1000])
+    print(paste("Average successful file size:", round(avg_size/1024, 1), "KB"))
+  }
+} else {
+  print("No files were downloaded successfully")
+}
 
 ###########################################################
 ### End Step. 2 DOWNLOAD NC DATA####
