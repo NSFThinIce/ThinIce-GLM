@@ -46,7 +46,7 @@ source("01_Scripts/00_ThinIce-GLM-Functions.R")
 ###########################################################
 lakeNumber<-"11" #number of the folder####
 lakeName<-"Shelburne" #Lake name here####
-year<-2018 #set the year here####
+year<-2017 #set the year here####
 local_tz_set = "US/Eastern" #enter the timezone you would like to have the final data in. see OlsonNames() for options####
 loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad when you go to collate and it's a mess.####
 extent = as.numeric(c(-73.16,44.37,-73.15,44.40)) #Enter in the decimal degree bounding box of your lake rounded to two decimals####
