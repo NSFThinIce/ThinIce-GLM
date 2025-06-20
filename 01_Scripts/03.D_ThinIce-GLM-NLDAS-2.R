@@ -46,7 +46,7 @@ source("01_Scripts/00_ThinIce-GLM-Functions.R")
 ###########################################################
 lakeNumber<-"12" #number of the folder####
 lakeName<-"ELA239" #Lake name here####
-year<-2021 #set the year here####
+year<-2023 #set the year here####
 local_tz_set = "US/Eastern" #enter the timezone you would like to have the final data in. see OlsonNames() for options####
 loc_tz = 'GMT' #only run in tz's without DST, otherwise you will be very sad when you go to collate and it's a mess.####
 extent = as.numeric(c(-93.72, 49.64, -93.70, 49.67 )) #Enter in the decimal degree bounding box of your lake rounded to two decimals####
@@ -337,7 +337,7 @@ out.ts = seq.POSIXt(as.POSIXct(startdatetime, tz = loc_tz),as.POSIXct(enddatetim
 #Do not uncomment these - but just run the code after the #
 #out.ts<-c(as.POSIXct("2019-01-11 07:00:00", tz = loc_tz),as.POSIXct("2019-01-12 01:00:00", tz = loc_tz),as.POSIXct("2019-06-24 03:00:00", tz = loc_tz),as.POSIXct("2019-11-19 21:00:00", tz = loc_tz))
 #out.ts<-c(as.POSIXct("2024-10-20 07:00:00", tz = loc_tz),as.POSIXct("2024-11-15 23:00:00", tz = loc_tz))
-#out.ts <- c(as.POSIXct("2024-01-01 01:00:00", tz = loc_tz))
+#out.ts <- c(as.POSIXct("2023-04-06 14:00:00", tz = loc_tz))
 # Create output list of tables
 output = list()
 
